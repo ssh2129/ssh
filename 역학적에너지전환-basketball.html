@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>중3 과학: 공의 상승과 낙하 - 역학적 에너지 시각적 분석</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
+    body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+
+    .app-card { background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.06); padding: 25px; width: 940px; border: 1px solid #e2e8f0; }
+    h1 { font-size: 22px; color: #1e293b; text-align: center; margin-bottom: 5px; }
+    p.subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 20px; }
+
+    #msg-box {
+      width: 100%;
+      padding: 14px 18px;
+      background-color: #fffbe3;
+      border: 2px solid #fde047;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: bold;
+      color: #713f12;
+      text-align: center;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      transition: all 0.3s ease;
+      white-space: pre-line;
+    }
+
+    .workspace { display: flex; gap: 20px; justify-content: center; align-items: flex-start; min-height: 400px; }
+
+    .section-panel {
+      flex: 1;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: all 0.5s ease;
+      max-width: 580px;
+    }
+
+    .section-panel.hidden { display: none !important; }
+
+    .panel-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding: 6px 16px; border-radius: 20px; color: white; }
+    .bg-up { background-color: #3b82f6; }
+    .bg-down { background-color: #f43f5e; }
+
+    .stage-container { display: flex; width: 100%; gap: 12px; align-items: center; justify-content: center; }
+    canvas { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; cursor: default; }
+
+    .quiz-group { display: flex; flex-direction: column; justify-content: space-between; height: 350px; flex: 1; }
+    .quiz-row { background: #ffffff; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px; font-weight: bold; transition: all 0.3s; }
+    .quiz-row.disabled { opacity: 0.4; pointer-events: none; }
+    .quiz-row-header { color: #475569; margin-bottom: 4px; text-align: center; }
+    
+    .quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .grid-item { display: flex; align-items: center; gap: 4px; }
+
+    .drop-box {
+      width: 68px; height: 30px; border: 2px dashed #cbd5e1; border-radius: 6px;
+      background: #fafafa; display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: bold; transition: all 0.2s;
+    }
+    .drop-box.active-target {
+      border-color: #3b82f6;
+      background-color: #eff6ff;
+      animation: pulse-border 1.5s infinite;
+    }
+    .drop-box.hover { border-color: #10b981; background-color: #d1fae5; }
+    .drop-box.filled { border-style: solid; border-color: #3b82f6; background-color: #eff6ff; color: #1d4ed8; }
+    .drop-box.auto-filled { border-style: solid; border-color: #8b5cf6; background-color: #f3e8ff; color: #6b21a8; }
+
+    @keyframes pulse-border {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
+    .card-deck { display: flex; justify-content: center; gap: 12px; margin-top: 20px; padding: 12px; background: #f1f5f9; border-radius: 12px; }
+    .drag-card { padding: 8px 20px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 20px; font-weight: bold; color: #334155; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.04); font-size: 13px; user-select: none; }
+    .drag-card:active { cursor: grabbing; transform: scale(1.05); }
+
+    .controls { display: flex; justify-content: center; gap: 12px; margin-top: 15px; }
+    .btn { padding: 10px 22px; font-size: 14px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .btn-action { background-color: #3b82f6; color: white; }
+    .btn-action:hover { background-color: #2563eb; }
+    .btn-action:disabled { background-color: #cbd5e1; cursor: not-allowed; }
+    .btn-summary { background-color: #8b5cf6; color: white; }
+    .btn-summary:hover { background-color: #7c3aed; }
+    .btn-reset { background-color: #64748b; color: white; }
+    .btn-reset:hover { background-color: #475569; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="app-card">
+  <h1>🏀 공의 상승과 낙하 (역학적 에너지 시각적 분석)</h1>
+  <p class="subtitle">높이와 속력을 드래그하여 맞추면, 위치 에너지와 운동 에너지가 자동으로 연결됩니다!</p>
+
+  <div id="msg-box">👉 먼저 하단의 [🏀 공 위로 던지기] 버튼을 눌러 출발 준비를 하세요!</div>
+
+  <div class="workspace">
+    <div class="section-panel" id="upPanel">
+      <div class="panel-title bg-up">▲ 올라갈 때 (상승)</div>
+      <div class="stage-container">
+        <canvas id="upCanvas" width="220" height="350"></canvas>
+        <div class="quiz-group">
+          <div class="quiz-row disabled" id="upRow-2">
+            <div class="quiz-row-header">③ 최고점 (상단)</div>
+            <div class="quiz-grid">
+              <div class="grid-item">높이: <div class="drop-box" data-type="height" data-step="up-2" data-ans="최대">드래그</div></div>
+              <div class="grid-item">위치E: <div class="drop-box" data-type="pe" data-step="up-2" data-ans="최대">자동</div></div>
+              <div class="grid-item">속력: <div class="drop-box" data-type="speed" data-step="up-2" data-ans="최소">드래그</div></div>
+              <div class="grid-item">운동E: <div class="drop-box" data-type="ke" data-step="up-2" data-ans="최소">자동</div></div>
+            </div>
+          </div>
+          <div class="quiz-row disabled" id="upRow-1">
+            <div class="quiz-row-header">② 상승 중 (중간)</div>
+            <div class="quiz-grid">
+              <div class="grid-item">높이: <div class="drop-box" data-type="height" data-step="up-1" data-ans="증가">드래그</div></div>
+              <div class="grid-item">위치E: <div class="drop-box" data-type="pe" data-step="up-1" data-ans="증가">자동</div></div>
+              <div class="grid-item">속력: <div class="drop-box" data-type="speed" data-step="up-1" data-ans="감소">드래그</div></div>
+              <div class="grid-item">운동E: <div class="drop-box" data-type="ke" data-step="up-1" data-ans="감소">자동</div></div>
+            </div>
+          </div>
+          <div class="quiz-row disabled" id="upRow-0">
+            <div class="quiz-row-header">① 던진 직후 (하단)</div>
+            <div class="quiz-grid">
+              <div class="grid-item">높이: <div class="drop-box" data-type="height" data-step="up-0" data-ans="최소">드래그</div></div>
+              <div class="grid-item">위치E: <div class="drop-box" data-type="pe" data-step="up-0" data-ans="최소">자동</div></div>
+              <div class="grid-item">속력: <div class="drop-box" data-type="speed" data-step="up-0" data-ans="최대">드래그</div></div>
+              <div class="grid-item">운동E: <div class="drop-box" data-type="ke" data-step="up-0" data-ans="최대">자동</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-panel hidden" id="downPanel">
+      <div class="panel-title bg-down">▼ 내려올 때 (낙하)</div>
+      <div class="stage-container">
+        <canvas id="downCanvas" width="220" height="350"></canvas>
+        <div class="quiz-group">
+          <div class="quiz-row disabled" id="downRow-0">
+            <div class="quiz-row-header">① 낙하 직전 (상단)</div>
+            <div class="quiz-grid">
+              <div class="grid-item">높이: <div class="drop-box" data-type="height" data-step="down-0" data-ans="최대">드래그</div></div>
+              <div class="grid-item">위치E: <div class="drop-box" data-type="pe" data-step="down-0" data-ans="최대">자동</div></div>
+              <div class="grid-item">속력: <div class="drop-box" data-type="speed" data-step="down-0" data-ans="최소">드래그</div></div>
+              <div class="grid-item">운동E: <div class="drop-box" data-type="ke" data-step="down-0" data-ans="최소">자동</div></div>
+            </div>
+          </div>
+          <div class="quiz-row disabled" id="downRow-1">
+            <div class="quiz-row-header">② 낙하 중 (중간)</div>
+            <div class="quiz-grid">
+              <div class="grid-item">높이: <div class="drop-box" data-type="height" data-step="down-1" data-ans="감소">드래그</div></div>
+              <div class="grid-item">위치E: <div class="drop-box" data-type="pe" data-step="down-1" data-ans="감소">자동</div></div>
+              <div class="grid-item">속력: <div class="drop-box" data-type="speed" data-step="down-1" data-ans="증가">드래그</div></div>
+              <div class="grid-item">운동E: <div class="drop-box" data-type="ke" data-step="down-1" data-ans="증가">자동</div></div>
+            </div>
+          </div>
+          <div class="quiz-row disabled" id="downRow-2">
+            <div class="quiz-row-header">③ 바닥 도달 (하단)</div>
+            <div class="quiz-grid">
+              <div class="grid-item">높이: <div class="drop-box" data-type="height" data-step="down-2" data-ans="최소">드래그</div></div>
+              <div class="grid-item">위치E: <div class="drop-box" data-type="pe" data-step="down-2" data-ans="최소">자동</div></div>
+              <div class="grid-item">속력: <div class="drop-box" data-type="speed" data-step="down-2" data-ans="최대">드래그</div></div>
+              <div class="grid-item">운동E: <div class="drop-box" data-type="ke" data-step="down-2" data-ans="최대">자동</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-deck">
+    <div class="drag-card" draggable="true" data-val="최대">최대</div>
+    <div class="drag-card" draggable="true" data-val="최소">최소</div>
+    <div class="drag-card" draggable="true" data-val="증가">증가</div>
+    <div class="drag-card" draggable="true" data-val="감소">감소</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-action" id="actionBtn" onclick="handleActionButton()">🏀 공 위로 던지기</button>
+    <button class="btn btn-summary hidden" id="summaryBtn" onclick="handleSummaryButton()">✨ 내용 정리</button>
+    <button class="btn btn-reset" onclick="resetApp()">다시 풀어보기 🔄</button>
+  </div>
+</div>
+
+<script>
+  const upCanvas = document.getElementById('upCanvas');
+  const upCtx = upCanvas.getContext('2d');
+  const downCanvas = document.getElementById('downCanvas');
+  const downCtx = downCanvas.getContext('2d');
+
+  let currentPhase = 'INIT';
+  let upY = 300;
+  let downY = 50;
+  let isAnimating = false;
+  let isDraggingArrow = false;
+
+  const targetYMapUp = { 'UP_0': 300, 'UP_1': 175, 'UP_2': 50 };
+  const targetYMapDown = { 'DOWN_0': 50, 'DOWN_1': 175, 'DOWN_2': 300 };
+
+  function drawStage(ctx, ballY, isUp) {
+    ctx.clearRect(0, 0, 220, 350);
+
+    ctx.strokeStyle = isUp ? '#93c5fd' : '#fca5a5';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.moveTo(60, 50); ctx.lineTo(60, 300);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = isUp ? '#3b82f6' : '#f43f5e';
+    ctx.beginPath();
+    if (isUp) {
+      ctx.moveTo(60, 35); ctx.lineTo(52, 50); ctx.lineTo(68, 50);
+    } else {
+      ctx.moveTo(60, 315); ctx.lineTo(52, 300); ctx.lineTo(68, 300);
+    }
+    ctx.fill();
+
+    drawBasketball(ctx, 60, ballY);
+  }
+
+  function drawBasketball(ctx, x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    ctx.fillStyle = '#ea580c';
+    ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#9a3412'; ctx.lineWidth = 1.5; ctx.stroke();
+
+    ctx.strokeStyle = '#431407'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(16, 0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(0, 16); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-6, 0, 12, -Math.PI/2, Math.PI/2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(6, 0, 12, Math.PI/2, -Math.PI/2); ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function animateWipeArrowWithGraph(ctx, isUp, callback) {
+    isAnimating = true;
+    let progress = 0;
+
+    function drawWipe() {
+      ctx.clearRect(0, 0, 220, 350);
+
+      const startY = isUp ? 300 : 50;
+      const endY = isUp ? 50 : 300;
+      const currentY = startY + (endY - startY) * progress;
+
+      ctx.strokeStyle = isUp ? '#2563eb' : '#e11d48';
+      ctx.lineWidth = 30;
+      ctx.lineCap = 'butt';
+      ctx.beginPath();
+      ctx.moveTo(40, startY); ctx.lineTo(40, currentY);
+      ctx.stroke();
+
+      if (progress > 0.1) {
+        ctx.fillStyle = isUp ? '#1d4ed8' : '#be123c';
+        ctx.beginPath();
+        if (isUp) {
+          ctx.moveTo(40, currentY - 20); ctx.lineTo(15, currentY + 5); ctx.lineTo(65, currentY + 5);
+        } else {
+          ctx.moveTo(40, currentY + 20); ctx.lineTo(15, currentY - 5); ctx.lineTo(65, currentY - 5);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      if (progress < 1) {
+        progress += 0.03;
+        requestAnimationFrame(drawWipe);
+      } else {
+        isAnimating = false;
+        if (callback) callback();
+      }
+    }
+    drawWipe();
+  }
+
+  // 캔버스 화살표 및 에너지 그래프 그리기
+  function drawEnergyRatioGraph(ctx, hPercent, isUp) {
+    ctx.clearRect(0, 0, 220, 350);
+
+    // 1. 좌측 화살표
+    ctx.strokeStyle = isUp ? '#2563eb' : '#e11d48';
+    ctx.lineWidth = 26;
+    ctx.beginPath(); ctx.moveTo(35, 300); ctx.lineTo(35, 50); ctx.stroke();
+
+    ctx.fillStyle = isUp ? '#1d4ed8' : '#be123c';
+    ctx.beginPath();
+    if (isUp) {
+      ctx.moveTo(35, 30); ctx.lineTo(15, 55); ctx.lineTo(55, 55);
+    } else {
+      ctx.moveTo(35, 320); ctx.lineTo(15, 295); ctx.lineTo(55, 295);
+    }
+    ctx.closePath(); ctx.fill();
+
+    // 2. 우측 삼각형 에너지 분할 그래프 (gx: 80~200, gy: 50~300)
+    const gx = 80, gy = 50, gw = 120, gh = 250;
+
+    // 배경 모눈종이 격자선
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+    for(let y = gy; y <= gy + gh; y += 25) {
+      ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + gw, y); ctx.stroke();
+    }
+
+    // 외곽 테두리
+    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2;
+    ctx.strokeRect(gx, gy, gw, gh);
+
+    // 높이 포인터 선 Y좌표 (gy = 50: 100%, gy+gh = 300: 0%)
+    const currentY = gy + gh - (gh * (hPercent / 100));
+
+    // ★ [클리핑 설정 - 상승/낙하 모드별 완벽 분기]
+    ctx.save();
+    ctx.beginPath();
+
+    if (isUp) {
+      // 올라갈 때(상승): 위쪽은 안보이고, '아래쪽' 영역만 보이게 설정
+      ctx.rect(gx - 5, currentY, gw + 10, (gy + gh) - currentY + 5);
+    } else {
+      // 내려올 때(낙하): 선생님의 의도대로 '위쪽' 영역만 보이게 유지
+      ctx.rect(gx - 5, gy - 5, gw + 10, currentY - gy + 5);
+    }
+    ctx.clip();
+
+    // 위치 에너지 (파란색 영역)
+    ctx.fillStyle = 'rgba(147, 197, 253, 0.85)';
+    ctx.beginPath();
+    ctx.moveTo(gx, gy); ctx.lineTo(gx + gw, gy); ctx.lineTo(gx + gw, gy + gh);
+    ctx.closePath(); ctx.fill();
+
+    // 운동 에너지 (분홍색 영역)
+    ctx.fillStyle = 'rgba(254, 205, 211, 0.85)';
+    ctx.beginPath();
+    ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh);
+    ctx.closePath(); ctx.fill();
+
+    // 대각선 구분선
+    ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
+
+    ctx.restore(); // 클리핑 영역 해제
+
+    // 3. 현재 높이 포인터 가로 점선 및 노란색 핸들
+    ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(20, currentY); ctx.lineTo(gx + gw + 5, currentY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath(); ctx.arc(35, currentY, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+
+    // 4. 에너지 라벨 및 수치 정보
+    ctx.fillStyle = '#1e3a8a'; ctx.font = 'bold 12px Pretendard'; ctx.fillText('위치 에너지', gx + 45, gy - 10);
+    ctx.fillStyle = '#9f1239'; ctx.font = 'bold 12px Pretendard'; ctx.fillText('운동 에너지', gx + 5, gy + gh + 18);
+
+    const potE = Math.round(hPercent);
+    const kinE = 100 - potE;
+    ctx.fillStyle = '#0f172a'; ctx.font = 'bold 11px Pretendard';
+    ctx.fillText(`현재 높이: ${hPercent}%`, gx, gy + gh + 35);
+    ctx.fillText(`[위치E ${potE}% : 운동E ${kinE}%]`, gx, gy + gh + 50);
+  }
+
+  // 캔버스 드래그/클릭 높이 제어
+  function handleCanvasHeightControl(e, canvas, isUp) {
+    if (isAnimating) return;
+    const rect = canvas.getBoundingClientRect();
+    const clickY = e.clientY - rect.top;
+
+    const minY = 50, maxY = 300;
+    const clampedY = Math.max(minY, Math.min(maxY, clickY));
+    
+    const hPercent = Math.round(((maxY - clampedY) / (maxY - minY)) * 100);
+
+    const ctx = isUp ? upCtx : downCtx;
+    drawEnergyRatioGraph(ctx, hPercent, isUp);
+  }
+
+  function setupCanvasDrag(canvas, isUp) {
+    canvas.addEventListener('mousedown', (e) => {
+      if (currentPhase === 'UP_SUMMARY_DONE' || currentPhase === 'ALL_DONE') {
+        isDraggingArrow = true;
+        handleCanvasHeightControl(e, canvas, isUp);
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (isDraggingArrow && (currentPhase === 'UP_SUMMARY_DONE' || currentPhase === 'ALL_DONE')) {
+        handleCanvasHeightControl(e, canvas, isUp);
+      }
+    });
+
+    window.addEventListener('mouseup', () => { isDraggingArrow = false; });
+  }
+
+  setupCanvasDrag(upCanvas, true);
+  setupCanvasDrag(downCanvas, false);
+
+  function setMsg(text, type = 'normal') {
+    const msgBox = document.getElementById('msg-box');
+    msgBox.textContent = text;
+    if (type === 'normal') {
+      msgBox.style.backgroundColor = '#fffbe3'; msgBox.style.borderColor = '#fde047'; msgBox.style.color = '#713f12';
+    } else if (type === 'success') {
+      msgBox.style.backgroundColor = '#dcfce7'; msgBox.style.borderColor = '#86efac'; msgBox.style.color = '#166534';
+    } else if (type === 'error') {
+      msgBox.style.backgroundColor = '#ffe4e6'; msgBox.style.borderColor = '#fca5a5'; msgBox.style.color = '#9f1239';
+    } else if (type === 'info') {
+      msgBox.style.backgroundColor = '#e0f2fe'; msgBox.style.borderColor = '#7dd3fc'; msgBox.style.color = '#0369a1';
+    }
+  }
+
+  function handleActionButton() {
+    const actionBtn = document.getElementById('actionBtn');
+
+    if (currentPhase === 'INIT') {
+      currentPhase = 'UP_0';
+      upY = 300;
+      drawStage(upCtx, upY, true);
+      updateStepUI();
+      actionBtn.disabled = true;
+      setMsg("🏀 공을 위로 던졌습니다!\n①번 [던진 직후(하단)]의 높이와 속력을 드래그해보세요.", 'info');
+
+    } else if (currentPhase === 'DOWN_READY') {
+      currentPhase = 'DOWN_0';
+      downY = 50;
+      drawStage(downCtx, downY, false);
+      updateStepUI();
+      actionBtn.disabled = true;
+      setMsg("🏀 공이 아래로 떨어집니다!\n①번 [낙하 직전(상단)]의 높이와 속력을 드래그해보세요.", 'info');
+    }
+  }
+
+  function handleSummaryButton() {
+    if (isAnimating) return;
+
+    const summaryBtn = document.getElementById('summaryBtn');
+    const actionBtn = document.getElementById('actionBtn');
+
+    if (currentPhase === 'UP_CORRECT_ALL') {
+      currentPhase = 'UP_SUMMARY_ANIM';
+      setMsg("✨ [상승 운동 내용 정리]\n화살표 위를 마우스로 클릭하거나 위아래로 드래그하여 아래쪽 에너지 면적 변화를 확인해보세요!", 'info');
+      
+      animateWipeArrowWithGraph(upCtx, true, () => {
+        currentPhase = 'UP_SUMMARY_DONE';
+        upCanvas.style.cursor = 'pointer';
+        drawEnergyRatioGraph(upCtx, 50, true);
+        summaryBtn.textContent = "✨ 내용 정리 (다음 단계로 ➔)";
+      });
+
+    } else if (currentPhase === 'UP_SUMMARY_DONE') {
+      document.getElementById('upPanel').classList.add('hidden');
+      document.getElementById('downPanel').classList.remove('hidden');
+
+      summaryBtn.classList.add('hidden');
+      actionBtn.classList.remove('hidden');
+      actionBtn.textContent = "🏀 공이 내려갈 때";
+      actionBtn.disabled = false;
+
+      currentPhase = 'DOWN_READY';
+      setMsg("👉 [🏀 공이 내려갈 때] 버튼을 눌러 낙하 운동을 시작하세요!", 'normal');
+
+    } else if (currentPhase === 'DOWN_CORRECT_ALL') {
+      currentPhase = 'DOWN_SUMMARY_ANIM';
+      setMsg("✨ [낙하 운동 내용 정리]\n화살표 위를 마우스로 클릭하거나 위아래로 드래그하여 낙하 시 위쪽 에너지 면적 변화를 확인해보세요!", 'info');
+
+      animateWipeArrowWithGraph(downCtx, false, () => {
+        currentPhase = 'ALL_DONE';
+        downCanvas.style.cursor = 'pointer';
+        drawEnergyRatioGraph(downCtx, 50, false);
+        summaryBtn.classList.add('hidden');
+      });
+    }
+  }
+
+  function updateStepUI() {
+    document.querySelectorAll('.quiz-row').forEach(r => r.classList.add('disabled'));
+    document.querySelectorAll('.drop-box').forEach(b => b.classList.remove('active-target'));
+
+    if (currentPhase === 'UP_0') activateRow('upRow-0', 'up-0');
+    else if (currentPhase === 'UP_1') activateRow('upRow-1', 'up-1');
+    else if (currentPhase === 'UP_2') activateRow('upRow-2', 'up-2');
+    else if (currentPhase === 'DOWN_0') activateRow('downRow-0', 'down-0');
+    else if (currentPhase === 'DOWN_1') activateRow('downRow-1', 'down-1');
+    else if (currentPhase === 'DOWN_2') activateRow('downRow-2', 'down-2');
+  }
+
+  function activateRow(rowId, stepKey) {
+    const row = document.getElementById(rowId);
+    if (row) {
+      row.classList.remove('disabled');
+      row.querySelectorAll(`.drop-box[data-step="${stepKey}"][data-type="height"], .drop-box[data-step="${stepKey}"][data-type="speed"]`).forEach(b => {
+        if (!b.classList.contains('filled')) b.classList.add('active-target');
+      });
+    }
+  }
+
+  function animateBallTo(targetY, isUp, callback) {
+    isAnimating = true;
+    function step() {
+      if (isUp) {
+        if (upY > targetY) {
+          upY = Math.max(targetY, upY - 4);
+          drawStage(upCtx, upY, true);
+          requestAnimationFrame(step);
+        } else {
+          isAnimating = false;
+          if (callback) callback();
+        }
+      } else {
+        if (downY < targetY) {
+          downY = Math.min(targetY, downY + 4);
+          drawStage(downCtx, downY, false);
+          requestAnimationFrame(step);
+        } else {
+          isAnimating = false;
+          if (callback) callback();
+        }
+      }
+    }
+    step();
+  }
+
+  let draggedVal = null;
+  document.querySelectorAll('.drag-card').forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      draggedVal = e.target.getAttribute('data-val');
+    });
+  });
+
+  document.querySelectorAll('.drop-box').forEach(box => {
+    box.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const boxStep = box.getAttribute('data-step');
+      const boxType = box.getAttribute('data-type');
+      if (isCurrentStepBox(boxStep) && (boxType === 'height' || boxType === 'speed') && !isAnimating) {
+        box.classList.add('hover');
+      }
+    });
+
+    box.addEventListener('dragleave', () => box.classList.remove('hover'));
+
+    box.addEventListener('drop', (e) => {
+      e.preventDefault();
+      box.classList.remove('hover');
+      const boxStep = box.getAttribute('data-step');
+      const boxType = box.getAttribute('data-type');
+
+      if (!isCurrentStepBox(boxStep) || (boxType !== 'height' && boxType !== 'speed') || isAnimating) {
+        alert("높이 또는 속력 상자의 반짝이는 빈칸에 드래그해주세요!");
+        return;
+      }
+
+      if (draggedVal) {
+        const correctAns = box.getAttribute('data-ans');
+
+        if (draggedVal !== correctAns) {
+          setMsg("❌ 틀린 항목이 있습니다. 물리 변수의 관계를 다시 점검하세요!", 'error');
+          return;
+        }
+
+        box.textContent = draggedVal;
+        box.setAttribute('data-user-val', draggedVal);
+        box.classList.add('filled');
+        box.classList.remove('active-target');
+
+        const parentRow = box.closest('.quiz-row');
+        if (boxType === 'height') {
+          const peBox = parentRow.querySelector('.drop-box[data-type="pe"]');
+          if (peBox) {
+            peBox.textContent = draggedVal;
+            peBox.setAttribute('data-user-val', draggedVal);
+            peBox.classList.add('auto-filled');
+          }
+        } else if (boxType === 'speed') {
+          const keBox = parentRow.querySelector('.drop-box[data-type="ke"]');
+          if (keBox) {
+            keBox.textContent = draggedVal;
+            keBox.setAttribute('data-user-val', draggedVal);
+            keBox.classList.add('auto-filled');
+          }
+        }
+
+        checkCurrentStepProgress(boxStep);
+      }
+    });
+  });
+
+  function isCurrentStepBox(boxStep) {
+    if (currentPhase === 'UP_0' && boxStep === 'up-0') return true;
+    if (currentPhase === 'UP_1' && boxStep === 'up-1') return true;
+    if (currentPhase === 'UP_2' && boxStep === 'up-2') return true;
+    if (currentPhase === 'DOWN_0' && boxStep === 'down-0') return true;
+    if (currentPhase === 'DOWN_1' && boxStep === 'down-1') return true;
+    if (currentPhase === 'DOWN_2' && boxStep === 'down-2') return true;
+    return false;
+  }
+
+  function checkCurrentStepProgress(stepKey) {
+    const boxes = document.querySelectorAll(`.drop-box[data-step="${stepKey}"]`);
+    let allFilled = true;
+
+    boxes.forEach(box => {
+      const userVal = box.getAttribute('data-user-val');
+      if (!userVal) allFilled = false;
+    });
+
+    if (allFilled) {
+      if (currentPhase === 'UP_0') {
+        setMsg("🎉 정답입니다! 높이=위치E, 속력=운동E 연결 완료!\n②번 [상승 중(중간)]의 변화를 맞추면 공이 올라갑니다.", 'success');
+        currentPhase = 'UP_1';
+        updateStepUI();
+        animateBallTo(targetYMapUp['UP_1'], true);
+
+      } else if (currentPhase === 'UP_1') {
+        setMsg("🎉 정답입니다!\n③번 [최고점(상단)]의 변화를 맞추면 공이 최고점까지 올라갑니다.", 'success');
+        currentPhase = 'UP_2';
+        updateStepUI();
+        animateBallTo(targetYMapUp['UP_2'], true);
+
+      } else if (currentPhase === 'UP_2') {
+        currentPhase = 'UP_CORRECT_ALL';
+        updateStepUI();
+
+        document.getElementById('actionBtn').classList.add('hidden');
+        const summaryBtn = document.getElementById('summaryBtn');
+        summaryBtn.classList.remove('hidden');
+        summaryBtn.textContent = "✨ 내용 정리";
+
+        setMsg("🎉 [상승 구간 완수!]\n모두 맞췄습니다. [✨ 내용 정리] 버튼을 눌러 에너지 전환 그래프를 확인하세요!", 'success');
+
+      } else if (currentPhase === 'DOWN_0') {
+        setMsg("🎉 정답입니다!\n②번 [낙하 중(중간)]의 변화를 맞추면 공이 내려옵니다.", 'success');
+        currentPhase = 'DOWN_1';
+        updateStepUI();
+        animateBallTo(targetYMapDown['DOWN_1'], false);
+
+      } else if (currentPhase === 'DOWN_1') {
+        setMsg("🎉 정답입니다!\n③번 [바닥 도달(하단)]의 변화를 맞추면 공이 바닥까지 내려옵니다.", 'success');
+        currentPhase = 'DOWN_2';
+        updateStepUI();
+        animateBallTo(targetYMapDown['DOWN_2'], false);
+
+      } else if (currentPhase === 'DOWN_2') {
+        currentPhase = 'DOWN_CORRECT_ALL';
+        updateStepUI();
+
+        document.getElementById('actionBtn').classList.add('hidden');
+        const summaryBtn = document.getElementById('summaryBtn');
+        summaryBtn.classList.remove('hidden');
+        summaryBtn.textContent = "✨ 내용 정리";
+
+        setMsg("🎉 [낙하 구간 완수!]\n모두 맞췄습니다. [✨ 내용 정리] 버튼을 누르면 최종 요약 연출이 시작됩니다!", 'success');
+      }
+    }
+  }
+
+  function resetApp() {
+    currentPhase = 'INIT';
+    upY = 300;
+    downY = 50;
+    isAnimating = false;
+    isDraggingArrow = false;
+
+    upCanvas.style.cursor = 'default';
+    downCanvas.style.cursor = 'default';
+
+    drawStage(upCtx, upY, true);
+    drawStage(downCtx, downY, false);
+
+    document.getElementById('upPanel').classList.remove('hidden');
+    document.getElementById('downPanel').classList.add('hidden');
+
+    const actionBtn = document.getElementById('actionBtn');
+    actionBtn.classList.remove('hidden');
+    actionBtn.textContent = "🏀 공 위로 던지기";
+    actionBtn.disabled = false;
+
+    const summaryBtn = document.getElementById('summaryBtn');
+    summaryBtn.classList.add('hidden');
+
+    document.querySelectorAll('.drop-box').forEach(box => {
+      const type = box.getAttribute('data-type');
+      box.textContent = (type === 'height' || type === 'speed') ? "드래그" : "자동";
+      box.removeAttribute('data-user-val');
+      box.classList.remove('filled', 'auto-filled', 'active-target');
+    });
+
+    updateStepUI();
+    setMsg("👉 먼저 하단의 [🏀 공 위로 던지기] 버튼을 눌러 출발 준비를 하세요!", 'normal');
+  }
+
+  drawStage(upCtx, upY, true);
+  drawStage(downCtx, downY, false);
+</script>
+</body>
+</html>
