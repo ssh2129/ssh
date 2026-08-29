@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>중3 과학: Step-by-Step 역학적 에너지 전환</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
+    body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+    
+    .app-card { background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.06); padding: 25px; width: 900px; border: 1px solid #e2e8f0; }
+    h1 { font-size: 22px; color: #1e293b; text-align: center; margin-bottom: 5px; }
+    p.subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 20px; }
+
+    /* Canvas 및 안내 메시지 컨테이너 */
+    .canvas-container { position: relative; width: 850px; height: 280px; margin: 0 auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; overflow: hidden; }
+    canvas { width: 100%; height: 100%; }
+
+    /* A지점 왼쪽 파스텔 톤 안내 메시지 표 */
+    #msg-box {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 250px;
+      padding: 14px 16px;
+      background-color: #fffbe3;
+      border: 2px solid #fde047;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 1.5;
+      color: #713f12;
+      z-index: 10;
+      transition: all 0.3s ease;
+      white-space: pre-line;
+    }
+
+    /* 교과서 형태 표 구조 */
+    .sheet-table { width: 850px; margin: 15px auto 0; border-collapse: collapse; }
+    .sheet-table th, .sheet-table td { padding: 8px; text-align: center; vertical-align: middle; }
+    
+    .label-cell { width: 130px; font-weight: bold; font-size: 14px; border-radius: 20px; color: white; padding: 6px 12px; display: inline-block; }
+    .bg-potential { background-color: #3b82f6; }
+    .bg-kinetic { background-color: #8b5cf6; }
+
+    /* 드롭 상자 */
+    .drop-box { width: 120px; height: 38px; border: 2px dashed #cbd5e1; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; margin: 0 auto; transition: all 0.2s; }
+    .drop-box.active-step { border-color: #3b82f6; background-color: #eff6ff; animation: pulse-border 1.5s infinite; }
+    .drop-box.hover { border-color: #10b981; background-color: #d1fae5; }
+    .drop-box.filled { border-style: solid; border-color: #3b82f6; background-color: #eff6ff; color: #1d4ed8; }
+
+    @keyframes pulse-border {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
+    /* 역학적 에너지 전환 영역 및 반짝임 */
+    .conversion-row { background: #f1f5f9; border-radius: 12px; margin-top: 15px; padding: 12px; display: flex; align-items: center; justify-content: space-around; border: 2px solid transparent; transition: all 0.3s; }
+    .conversion-row.blink-active {
+      border-color: #f59e0b;
+      animation: flash-bg 1s infinite alternate;
+    }
+
+    @keyframes flash-bg {
+      0% { background-color: #fef3c7; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4); }
+      100% { background-color: #f1f5f9; box-shadow: none; }
+    }
+
+    .conversion-title { font-weight: bold; font-size: 13px; color: #334155; background: #e2e8f0; padding: 6px 10px; border-radius: 6px; }
+    .arrow-box { font-size: 13px; font-weight: bold; color: #475569; display: flex; align-items: center; gap: 8px; }
+
+    /* 드래그 카드 덱 */
+    .card-deck { display: flex; justify-content: center; gap: 10px; margin-top: 15px; padding: 12px; background: #f8fafc; border-radius: 12px; flex-wrap: wrap; border: 1px solid #e2e8f0; }
+    .drag-card { padding: 8px 18px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 20px; font-weight: bold; color: #334155; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.03); user-select: none; font-size: 13px; }
+    .drag-card.type-energy { background: #fef3c7; border-color: #fde047; color: #854d0e; }
+    .drag-card:active { cursor: grabbing; transform: scale(1.05); }
+
+    /* 컨트롤 버튼 */
+    .controls { display: flex; justify-content: center; gap: 12px; margin-top: 15px; }
+    .btn { padding: 10px 22px; font-size: 14px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .btn-start { background-color: #10b981; color: white; }
+    .btn-start:hover { background-color: #059669; }
+    .btn-start:disabled { background-color: #cbd5e1; cursor: not-allowed; }
+    .btn-reset { background-color: #f43f5e; color: white; }
+    .btn-reset:hover { background-color: #e11d48; }
+  </style>
+</head>
+<body>
+
+<div class="app-card">
+  <h1>🎢 중3 역학적 에너지 보존 및 전환</h1>
+  <p class="subtitle">[청룡열차 운행 시작]을 눌러 출발시킨 후, 알맞은 에너지를 드래그하면 자동으로 다음 구간으로 이동합니다!</p>
+
+  <div class="canvas-container">
+    <div id="msg-box">👉 [청룡열차 운행 시작] 버튼을 클릭해 출발하세요!</div>
+    <canvas id="trackCanvas" width="850" height="280"></canvas>
+  </div>
+
+  <table class="sheet-table">
+    <tr>
+      <td style="width: 150px; text-align: left;"><span class="label-cell bg-potential">● 위치 에너지</span></td>
+      <td><div class="drop-box" data-step="0" data-ans="최대">드래그</div></td>
+      <td><div class="drop-box" data-step="1" data-ans="감소">드래그</div></td>
+      <td><div class="drop-box" data-step="2" data-ans="최소">드래그</div></td>
+      <td><div class="drop-box" data-step="3" data-ans="증가">드래그</div></td>
+    </tr>
+    <tr>
+      <td style="width: 150px; text-align: left;"><span class="label-cell bg-kinetic">● 운동 에너지</span></td>
+      <td><div class="drop-box" data-step="0" data-ans="최소">드래그</div></td>
+      <td><div class="drop-box" data-step="1" data-ans="증가">드래그</div></td>
+      <td><div class="drop-box" data-step="2" data-ans="최대">드래그</div></td>
+      <td><div class="drop-box" data-step="3" data-ans="감소">드래그</div></td>
+    </tr>
+  </table>
+
+  <div class="conversion-row" id="conversionRow">
+    <span class="conversion-title">역학적 에너지 전환</span>
+    <div class="arrow-box">
+      [하강 구간] <div class="drop-box" data-step="4" data-ans="위치 에너지" style="width: 110px;">드래그</div> ➔ <div class="drop-box" data-step="4" data-ans="운동 에너지" style="width: 110px;">드래그</div>
+    </div>
+    <div class="arrow-box">
+      [상승 구간] <div class="drop-box" data-step="4" data-ans="운동 에너지" style="width: 110px;">드래그</div> ➔ <div class="drop-box" data-step="4" data-ans="위치 에너지" style="width: 110px;">드래그</div>
+    </div>
+  </div>
+
+  <div class="card-deck">
+    <div class="drag-card" draggable="true" data-val="최대">최대</div>
+    <div class="drag-card" draggable="true" data-val="최소">최소</div>
+    <div class="drag-card" draggable="true" data-val="증가">증가</div>
+    <div class="drag-card" draggable="true" data-val="감소">감소</div>
+    <div class="drag-card type-energy" draggable="true" data-val="위치 에너지">위치 에너지</div>
+    <div class="drag-card type-energy" draggable="true" data-val="운동 에너지">운동 에너지</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-start" id="startBtn" onclick="runNextStep()">🎢 청룡열차 운행 시작</button>
+    <button class="btn btn-reset" onclick="resetApp()">다시 시작하기 🔄</button>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('trackCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let currentStep = -1; // -1: 시작 전, 0: A, 1: B, 2: C, 3: D, 4: 전환 단계
+  let currentT = 0;
+  let isMoving = false;
+
+  // A, B, C, D 지점의 X좌표 축 완전 통일 고정
+  const keyPointsInfo = [
+    { name: "A", x: 310, offsetY: -22, color: '#0284c7' },
+    { name: "B", x: 450, offsetY: -18, color: '#6366f1' },
+    { name: "C", x: 580, offsetY: 30,  color: '#4f46e5' },
+    { name: "D", x: 735, offsetY: -18, color: '#6366f1' }
+  ];
+
+  // 곡선 진행 t값 매핑
+  const stepTValues = [0, 0.25, 0.50, 0.83, 1.0];
+  const stepNames = ["A 지점 (최고점)", "B 지점 (하강 중)", "C 지점 (최저점)", "D 지점 (상승 중)"];
+
+  function getTrackPoint(t) {
+    if (t <= 0.50) {
+      let localT = t / 0.50;
+      return cubicBezier({x: 310, y: 30}, {x: 400, y: 30}, {x: 460, y: 245}, {x: 580, y: 245}, localT);
+    } else {
+      let localT = (t - 0.50) / 0.50;
+      return cubicBezier({x: 580, y: 245}, {x: 680, y: 245}, {x: 750, y: 50}, {x: 810, y: 50}, localT);
+    }
+  }
+
+  function cubicBezier(p0, p1, p2, p3, t) {
+    let cx = 3 * (p1.x - p0.x), bx = 3 * (p2.x - p1.x) - cx, ax = p3.x - p0.x - cx - bx;
+    let cy = 3 * (p1.y - p0.y), by = 3 * (p2.y - p1.y) - cy, ay = p3.y - p0.y - cy - by;
+    let x = (ax * Math.pow(t, 3)) + (bx * Math.pow(t, 2)) + (cx * t) + p0.x;
+    let y = (ay * Math.pow(t, 3)) + (by * Math.pow(t, 2)) + (cy * t) + p0.y;
+    return {x, y};
+  }
+
+  function drawScene() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 1. 보조선
+    ctx.strokeStyle = '#f1f5f9';
+    ctx.lineWidth = 1;
+    for(let y=30; y<=245; y+=30) {
+      ctx.beginPath(); ctx.moveTo(50, y); ctx.lineTo(820, y); ctx.stroke();
+    }
+
+    // 2. 곡선 레일
+    ctx.beginPath();
+    ctx.moveTo(310, 30);
+    ctx.bezierCurveTo(400, 30, 460, 245, 580, 245);
+    ctx.bezierCurveTo(680, 245, 750, 50, 810, 50);
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    // 3. 지지 기둥, 핀, 글자 위치(A, B, C, D) 100% 수직 정렬
+    keyPointsInfo.forEach((info, idx) => {
+      let tVal = stepTValues[idx];
+      let trackPos = getTrackPoint(tVal); // 정확한 곡선 위 Y좌표 계산
+
+      // 지지 기둥 (X축 완전 일치)
+      ctx.fillStyle = info.color;
+      ctx.fillRect(info.x - 6, trackPos.y, 12, 255 - trackPos.y);
+
+      // 레드 포인트 핀
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath(); ctx.arc(info.x, trackPos.y, 7, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+
+      // 지점 알파벳 라벨 (수직 중앙 일치)
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '900 22px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(info.name, info.x, trackPos.y + info.offsetY);
+    });
+
+    // 4. 청룡열차(롤러코스터) 그리기
+    const pos = getTrackPoint(currentT);
+    drawRollerCoaster(pos.x, pos.y - 8);
+  }
+
+  // 청룡열차(Roller Coaster) 차량 렌더링
+  function drawRollerCoaster(x, y) {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // 롤러코스터 2카 연결부
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(-10, 2); ctx.lineTo(-2, 2); ctx.stroke();
+
+    // --- [1호차 (앞차)] ---
+    // 카 바디 (스포티 블루/시안)
+    ctx.fillStyle = '#0284c7';
+    ctx.beginPath();
+    ctx.roundRect(0, -12, 22, 14, [4, 8, 2, 2]);
+    ctx.fill();
+
+    // 노랑 스트라이프 포인트
+    ctx.fillStyle = '#fde047';
+    ctx.fillRect(2, -4, 18, 3);
+
+    // 안전바 & 좌석
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(5, -10, 8, 4); // 헤드레스트
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(4, -8, 10, 6); // 안전바
+
+    // 바람막이 유리
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.6)';
+    ctx.beginPath();
+    ctx.moveTo(15, -12); ctx.lineTo(21, -6); ctx.lineTo(15, -6);
+    ctx.closePath(); ctx.fill();
+
+    // --- [2호차 (뒷차)] ---
+    ctx.fillStyle = '#2563eb';
+    ctx.beginPath();
+    ctx.roundRect(-24, -12, 20, 14, [4, 4, 2, 2]);
+    ctx.fill();
+
+    // 노랑 스트라이프 포인트
+    ctx.fillStyle = '#fde047';
+    ctx.fillRect(-22, -4, 16, 3);
+
+    // 안전바 & 좌석
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(-19, -10, 8, 4);
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-20, -8, 10, 6);
+
+    // --- [하부 바퀴 프레임 및 바퀴] ---
+    ctx.fillStyle = '#0f172a';
+    // 1호차 바퀴 (앞/뒤)
+    ctx.beginPath(); ctx.arc(4, 4, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(17, 4, 4, 0, Math.PI * 2); ctx.fill();
+    // 2호차 바퀴 (앞/뒤)
+    ctx.beginPath(); ctx.arc(-20, 4, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-7, 4, 4, 0, Math.PI * 2); ctx.fill();
+
+    // 바퀴 베어링
+    ctx.fillStyle = '#94a3b8';
+    ctx.beginPath(); ctx.arc(4, 4, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(17, 4, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-20, 4, 1.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(-7, 4, 1.5, 0, Math.PI * 2); ctx.fill();
+
+    ctx.restore();
+  }
+
+  function setMsg(text, type = 'normal') {
+    const msgBox = document.getElementById('msg-box');
+    msgBox.textContent = text;
+
+    if (type === 'normal') {
+      msgBox.style.backgroundColor = '#fffbe3';
+      msgBox.style.borderColor = '#fde047';
+      msgBox.style.color = '#713f12';
+    } else if (type === 'move') {
+      msgBox.style.backgroundColor = '#e0f2fe';
+      msgBox.style.borderColor = '#7dd3fc';
+      msgBox.style.color = '#0369a1';
+    } else if (type === 'error') {
+      msgBox.style.backgroundColor = '#ffe4e6';
+      msgBox.style.borderColor = '#fca5a5';
+      msgBox.style.color = '#9f1239';
+    } else if (type === 'success') {
+      msgBox.style.backgroundColor = '#dcfce7';
+      msgBox.style.borderColor = '#86efac';
+      msgBox.style.color = '#166534';
+    }
+  }
+
+  function runNextStep() {
+    if (isMoving) return;
+
+    if (currentStep === -1) {
+      currentStep = 0;
+      startMoveAnimation();
+    }
+  }
+
+  function startMoveAnimation() {
+    isMoving = true;
+    document.getElementById('startBtn').disabled = true;
+
+    const targetT = stepTValues[currentStep];
+    if (currentStep < 4) {
+      setMsg(`🎢 청룡열차가 [${stepNames[currentStep]}]로 이동하고 있습니다...`, 'move');
+    }
+
+    function animate() {
+      if (currentT < targetT) {
+        currentT += 0.007;
+        if (currentT >= targetT) {
+          currentT = targetT;
+          drawScene();
+          onReachDestination();
+          return;
+        }
+        drawScene();
+        requestAnimationFrame(animate);
+      } else {
+        drawScene();
+        onReachDestination();
+      }
+    }
+    animate();
+  }
+
+  function onReachDestination() {
+    isMoving = false;
+    if (currentStep < 4) {
+      setMsg(`📍 [${stepNames[currentStep]}]에 도착했습니다!\n아래 반짝이는 빈칸에 에너지를 드래그하세요.`, 'normal');
+      document.querySelectorAll(`.drop-box[data-step="${currentStep}"]`).forEach(b => b.classList.add('active-step'));
+    }
+  }
+
+  // 드래그 앤 드롭
+  let draggedVal = null;
+  document.querySelectorAll('.drag-card').forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      draggedVal = e.target.getAttribute('data-val');
+    });
+  });
+
+  document.querySelectorAll('.drop-box').forEach(box => {
+    box.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const boxStep = parseInt(box.getAttribute('data-step'));
+      if (boxStep === currentStep && !isMoving) {
+        box.classList.add('hover');
+      }
+    });
+
+    box.addEventListener('dragleave', () => box.classList.remove('hover'));
+
+    box.addEventListener('drop', (e) => {
+      e.preventDefault();
+      box.classList.remove('hover');
+      const boxStep = parseInt(box.getAttribute('data-step'));
+
+      if (boxStep !== currentStep || isMoving) {
+        alert("청룡열차가 해당 지점에 도착한 후 작성할 수 있습니다!");
+        return;
+      }
+
+      if (draggedVal) {
+        box.textContent = draggedVal;
+        box.setAttribute('data-user-val', draggedVal);
+        box.classList.add('filled');
+        checkStepProgress();
+      }
+    });
+  });
+
+  function checkStepProgress() {
+    const currentBoxes = document.querySelectorAll(`.drop-box[data-step="${currentStep}"]`);
+    let allFilled = true;
+    let hasError = false;
+
+    currentBoxes.forEach(box => {
+      const userVal = box.getAttribute('data-user-val');
+      const ansVal = box.getAttribute('data-ans');
+
+      if (!userVal) {
+        allFilled = false;
+      } else if (userVal !== ansVal) {
+        hasError = true;
+      }
+    });
+
+    if (hasError) {
+      setMsg("❌ 틀린 부분이 있습니다.\n다시 생각하세요!", 'error');
+      return;
+    }
+
+    if (allFilled && !hasError) {
+      currentBoxes.forEach(b => b.classList.remove('active-step'));
+
+      if (currentStep < 3) {
+        setMsg(`🎉 정답입니다!\n다음 구간으로 자동 이동합니다.`, 'success');
+        currentStep++;
+        setTimeout(() => {
+          startMoveAnimation();
+        }, 1000);
+
+      } else if (currentStep === 3) {
+        currentStep = 4;
+        setMsg(`🎉 D지점 성공!\n청룡열차가 언덕 끝까지 이동합니다.`, 'success');
+        
+        setTimeout(() => {
+          startMoveAnimation();
+        }, 800);
+
+        setTimeout(() => {
+          setMsg(`🎉 모든 구간 완주!\n하단에서 깜빡이는 [역학적 에너지 전환] 관계를 완성하세요!`, 'success');
+          document.getElementById('conversionRow').classList.add('blink-active');
+          document.querySelectorAll(`.drop-box[data-step="4"]`).forEach(b => b.classList.add('active-step'));
+        }, 2000);
+
+      } else if (currentStep === 4) {
+        document.getElementById('conversionRow').classList.remove('blink-active');
+        setMsg(`🏆 완벽합니다!\n역학적 에너지의 보존과 전환 개념을 마스터했습니다!`, 'success');
+      }
+    }
+  }
+
+  function resetApp() {
+    currentStep = -1;
+    currentT = 0;
+    isMoving = false;
+
+    drawScene();
+
+    document.querySelectorAll('.drop-box').forEach(box => {
+      box.textContent = "드래그";
+      box.removeAttribute('data-user-val');
+      box.classList.remove('filled', 'active-step');
+    });
+
+    document.getElementById('conversionRow').classList.remove('blink-active');
+
+    const btn = document.getElementById('startBtn');
+    btn.textContent = "🎢 청룡열차 운행 시작";
+    btn.disabled = false;
+
+    setMsg("👉 [청룡열차 운행 시작] 버튼을 클릭해 출발하세요!", 'normal');
+  }
+
+  // 초기 실행
+  drawScene();
+</script>
+</body>
+</html>
