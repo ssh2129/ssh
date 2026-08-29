@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>물질의 특성 구분하기 - 중2 과학</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', -apple-system, sans-serif; touch-action: manipulation; }
+    body { background: #f0f4f8; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 15px; overflow-x: hidden; position: relative; }
+    
+    canvas#bgCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+    
+    header { text-align: center; margin-bottom: 12px; }
+    h1 { color: #1e293b; font-size: 1.6rem; margin-bottom: 4px; }
+    p { color: #64748b; font-size: 0.9rem; }
+
+    .status-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 900px; background: white; padding: 10px 18px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 12px; font-weight: bold; color: #334155; }
+    .round-badge { background: #3b82f6; color: white; padding: 4px 12px; border-radius: 16px; font-size: 0.9rem; }
+    .status-info { display: flex; gap: 15px; font-size: 0.95rem; }
+    .status-correct { color: #10b981; }
+    .status-remaining { color: #ef4444; }
+
+    .card-pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; max-width: 900px; min-height: 85px; background: rgba(255, 255, 255, 0.85); padding: 12px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 15px; align-items: center; }
+    .card { background: #3b82f6; color: white; padding: 8px 16px; border-radius: 20px; font-weight: bold; cursor: grab; user-select: none; transition: transform 0.1s, background 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 0.9rem; touch-action: none; }
+    .card.dragging { opacity: 0.6; transform: scale(1.08); position: fixed; z-index: 1000; pointer-events: none; }
+
+    .drop-zones { display: flex; gap: 10px; width: 100%; max-width: 900px; justify-content: center; }
+    .zone { flex: 1; background: white; border: 2px dashed #cbd5e1; border-radius: 14px; padding: 10px; min-height: 260px; display: flex; flex-direction: column; align-items: center; transition: border-color 0.2s, background-color 0.2s; }
+    .zone.hovered { border-color: #3b82f6; background-color: #eff6ff; }
+    .zone h2 { font-size: 0.95rem; color: #334155; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0; width: 100%; text-align: center; }
+    .zone .card-slot { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; }
+
+    #feedback { position: fixed; bottom: 25px; font-size: 1.2rem; font-weight: bold; padding: 10px 20px; border-radius: 25px; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(20px); z-index: 10; pointer-events: none; }
+    #feedback.show { opacity: 1; transform: translateY(0); }
+    #feedback.success { background: #10b981; color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+    #feedback.error { background: #ef4444; color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+
+    .btn { padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
+    .reset-btn { margin-top: 15px; background: #64748b; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 100; visibility: hidden; opacity: 0; transition: opacity 0.3s; padding: 15px; }
+    .modal-overlay.active { visibility: visible; opacity: 1; }
+    .modal-content { background: white; padding: 20px; border-radius: 18px; text-align: center; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    
+    .summary-table { width: 100%; border-collapse: collapse; margin: 15px 0; text-align: left; }
+    .summary-table th, .summary-table td { padding: 10px; border: 1px solid #e2e8f0; font-size: 0.85rem; line-height: 1.4; }
+    .summary-table th { background: #f8fafc; text-align: center; }
+    .tag-not-property { color: #ef4444; background: #fef2f2; font-weight: bold; text-align: center; }
+    .tag-property { color: #2563eb; background: #eff6ff; font-weight: bold; text-align: center; }
+    .tag-apparent { color: #059669; background: #ecfdf5; font-weight: bold; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <canvas id="bgCanvas"></canvas>
+
+  <header>
+    <h1>🧪 물질의 특성 구분하기</h1>
+    <p>카드를 터치/드래그하여 알맞은 상자에 넣어보세요!</p>
+  </header>
+
+  <div class="status-bar">
+    <span class="round-badge" id="roundBadge">ROUND 1 / 3</span>
+    <div class="status-info">
+      <span class="status-correct">정답: <span id="correctCount">0</span> / <span id="totalRoundCards">7</span>개</span>
+      <span class="status-remaining">남은 카드: <span id="remainingCount">7</span>개</span>
+    </div>
+  </div>
+
+  <div class="card-pool" id="cardPool"></div>
+
+  <div class="drop-zones">
+    <div class="zone" data-category="not-property">
+      <h2>❌ 물질의 특성이 아님</h2>
+      <div class="card-slot"></div>
+    </div>
+    <div class="zone" data-category="property">
+      <h2>⭕ 물질의 특성</h2>
+      <div class="card-slot"></div>
+    </div>
+    <div class="zone" data-category="apparent">
+      <h2>👁️ 겉보기 성질</h2>
+      <div class="card-slot"></div>
+    </div>
+  </div>
+
+  <div id="feedback"></div>
+  <button class="btn reset-btn" onclick="restartGame()">처음부터 다시하기</button>
+
+  <div class="modal-overlay" id="resultModal">
+    <div class="modal-content">
+      <h2>🎉 3회 학습 완주 성공!</h2>
+      <p style="color:#64748b; margin-top:4px;">오늘 배운 물질의 특성 개념 정리표입니다.</p>
+      
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th style="width: 25%;">구분</th>
+            <th style="width: 25%;">항목</th>
+            <th style="width: 50%;">핵심 특징</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tag-not-property">물질의 특성이 아님</td>
+            <td><b>질량, 부피, 길이</b></td>
+            <td>양에 따라 측정값이 변하므로 물질 구별 불가능</td>
+          </tr>
+          <tr>
+            <td class="tag-property">물질의 특성</td>
+            <td><b>밀도, 용해도,<br>녹는점, 끓는점</b></td>
+            <td>양에 상관없이 일정한 물질 고유의 성질</td>
+          </tr>
+          <tr>
+            <td class="tag-apparent">겉보기 성질</td>
+            <td><b>촉감, 색깔,<br>맛, 냄새</b></td>
+            <td>감각 기관으로 쉽게 구별할 수 있는 성질</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button class="btn" onclick="restartGame()">다시 도전하기</button>
+    </div>
+  </div>
+
+  <script>
+    const itemsData = [
+      { id: 1, text: '질량', category: 'not-property' },
+      { id: 2, text: '부피', category: 'not-property' },
+      { id: 3, text: '길이', category: 'not-property' },
+      { id: 4, text: '밀도', category: 'property' },
+      { id: 5, text: '용해도', category: 'property' },
+      { id: 6, text: '녹는점', category: 'property' },
+      { id: 7, text: '끓는점', category: 'property' },
+      { id: 8, text: '촉감', category: 'apparent' },
+      { id: 9, text: '색깔', category: 'apparent' },
+      { id: 10, text: '맛', category: 'apparent' },
+      { id: 11, text: '냄새', category: 'apparent' }
+    ];
+
+    // 라운드별 출제 카드 개수 정의 (1R: 7개, 2R: 9개, 3R: 11개)
+    const roundConfig = { 1: 7, 2: 9, 3: 11 };
+
+    let currentRound = 1;
+    const maxRounds = 3;
+    let currentRoundTotal = 7;
+    let remainingCards = 0;
+    let correctCards = 0;
+    let activeCard = null;
+
+    function restartGame() {
+      currentRound = 1;
+      document.getElementById('resultModal').classList.remove('active');
+      startRound();
+    }
+
+    function startRound() {
+      const cardPool = document.getElementById('cardPool');
+      cardPool.innerHTML = '';
+      document.querySelectorAll('.zone .card-slot').forEach(slot => slot.innerHTML = '');
+
+      currentRoundTotal = roundConfig[currentRound];
+      document.getElementById('roundBadge').textContent = `ROUND ${currentRound} / ${maxRounds}`;
+      document.getElementById('totalRoundCards').textContent = currentRoundTotal;
+      
+      remainingCards = currentRoundTotal;
+      correctCards = 0;
+      updateStatusCounts();
+
+      // 라운드 카드 개수에 맞춰 무작위 추출 및 셔플
+      const roundItems = [...itemsData].sort(() => Math.random() - 0.5).slice(0, currentRoundTotal);
+
+      roundItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.textContent = item.text;
+        card.dataset.category = item.category;
+
+        // Mouse Drag
+        card.draggable = true;
+        card.addEventListener('dragstart', (e) => {
+          activeCard = card;
+          e.dataTransfer.setData('text/plain', item.category);
+        });
+
+        // Touch Drag (Mobile/Tablet)
+        card.addEventListener('touchstart', handleTouchStart, { passive: false });
+        card.addEventListener('touchmove', handleTouchMove, { passive: false });
+        card.addEventListener('touchend', handleTouchEnd);
+
+        cardPool.appendChild(card);
+      });
+    }
+
+    // Touch Event Handlers
+    let touchOffset = { x: 0, y: 0 };
+    function handleTouchStart(e) {
+      e.preventDefault();
+      activeCard = this;
+      const touch = e.touches[0];
+      const rect = activeCard.getBoundingClientRect();
+      touchOffset.x = touch.clientX - rect.left;
+      touchOffset.y = touch.clientY - rect.top;
+
+      activeCard.classList.add('dragging');
+      activeCard.style.left = `${touch.clientX - touchOffset.x}px`;
+      activeCard.style.top = `${touch.clientY - touchOffset.y}px`;
+    }
+
+    function handleTouchMove(e) {
+      if (!activeCard) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      activeCard.style.left = `${touch.clientX - touchOffset.x}px`;
+      activeCard.style.top = `${touch.clientY - touchOffset.y}px`;
+
+      const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.zone');
+      document.querySelectorAll('.zone').forEach(z => z.classList.remove('hovered'));
+      if (dropTarget) dropTarget.classList.add('hovered');
+    }
+
+    function handleTouchEnd(e) {
+      if (!activeCard) return;
+      const touch = e.changedTouches[0];
+      const dropZone = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.zone');
+
+      activeCard.classList.remove('dragging');
+      activeCard.style.position = '';
+      document.querySelectorAll('.zone').forEach(z => z.classList.remove('hovered'));
+
+      if (dropZone) {
+        checkAnswer(activeCard, dropZone);
+      }
+      activeCard = null;
+    }
+
+    function updateStatusCounts() {
+      document.getElementById('correctCount').textContent = correctCards;
+      document.getElementById('remainingCount').textContent = remainingCards;
+    }
+
+    // Mouse Drop
+    document.querySelectorAll('.zone').forEach(zone => {
+      zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('hovered'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('hovered'));
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('hovered');
+        if (activeCard) checkAnswer(activeCard, zone);
+      });
+    });
+
+    function checkAnswer(card, zone) {
+      if (zone.dataset.category === card.dataset.category) {
+        zone.querySelector('.card-slot').appendChild(card);
+        card.draggable = false;
+        card.style.cursor = 'default';
+        showFeedback('정답! 🎉', 'success');
+        triggerConfetti();
+
+        correctCards++;
+        remainingCards--;
+        updateStatusCounts();
+
+        if (remainingCards === 0) {
+          setTimeout(() => {
+            if (currentRound < maxRounds) {
+              currentRound++;
+              alert(`🎉 ${currentRound - 1}라운드 완료! ${currentRound}라운드는 ${roundConfig[currentRound]}개 카드가 출제됩니다.`);
+              startRound();
+            } else {
+              document.getElementById('resultModal').classList.add('active');
+              triggerConfetti();
+            }
+          }, 400);
+        }
+      } else {
+        showFeedback('다시 생각하세요! 💡', 'error');
+      }
+    }
+
+    function showFeedback(text, type) {
+      const feedback = document.getElementById('feedback');
+      feedback.textContent = text;
+      feedback.className = `show ${type}`;
+      setTimeout(() => { feedback.className = ''; }, 1200);
+    }
+
+    // Background Canvas Effect
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function triggerConfetti() {
+      for (let i = 0; i < 20; i++) {
+        particles.push({
+          x: window.innerWidth / 2, y: window.innerHeight / 2,
+          vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10 - 2,
+          size: Math.random() * 6 + 3, color: `hsl(${Math.random() * 360}, 100%, 50%)`, life: 40
+        });
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life--;
+        ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+        if (p.life <= 0) particles.splice(i, 1);
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    startRound();
+  </script>
+</body>
+</html>
