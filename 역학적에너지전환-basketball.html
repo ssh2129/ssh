@@ -6,54 +6,55 @@
   <title>중3 과학: 공의 상승과 낙하 - 역학적 에너지 시각적 분석</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
-    body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+    body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 15px; }
 
-    .app-card { background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.06); padding: 25px; width: 940px; border: 1px solid #e2e8f0; }
+    .app-card { background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.06); padding: 20px; width: 940px; max-width: 100%; border: 1px solid #e2e8f0; }
     h1 { font-size: 22px; color: #1e293b; text-align: center; margin-bottom: 5px; }
-    p.subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 20px; }
+    p.subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 15px; }
 
     #msg-box {
       width: 100%;
-      padding: 14px 18px;
+      padding: 12px 16px;
       background-color: #fffbe3;
       border: 2px solid #fde047;
       border-radius: 10px;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: bold;
       color: #713f12;
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       line-height: 1.5;
       transition: all 0.3s ease;
       white-space: pre-line;
     }
 
-    .workspace { display: flex; gap: 20px; justify-content: center; align-items: flex-start; min-height: 400px; }
+    .workspace { display: flex; gap: 15px; justify-content: center; align-items: flex-start; min-height: 400px; flex-wrap: wrap; }
 
     .section-panel {
       flex: 1;
       background: #f8fafc;
       border: 2px solid #e2e8f0;
       border-radius: 12px;
-      padding: 15px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
       transition: all 0.5s ease;
+      width: 100%;
       max-width: 580px;
     }
 
     .section-panel.hidden { display: none !important; }
 
-    .panel-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding: 6px 16px; border-radius: 20px; color: white; }
+    .panel-title { font-size: 15px; font-weight: bold; margin-bottom: 10px; padding: 6px 16px; border-radius: 20px; color: white; }
     .bg-up { background-color: #3b82f6; }
     .bg-down { background-color: #f43f5e; }
 
-    .stage-container { display: flex; width: 100%; gap: 12px; align-items: center; justify-content: center; }
-    canvas { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; cursor: default; }
+    .stage-container { display: flex; width: 100%; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+    canvas { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; cursor: default; touch-action: none; }
 
-    .quiz-group { display: flex; flex-direction: column; justify-content: space-between; height: 350px; flex: 1; }
-    .quiz-row { background: #ffffff; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px; font-weight: bold; transition: all 0.3s; }
+    .quiz-group { display: flex; flex-direction: column; justify-content: space-between; height: 350px; flex: 1; min-width: 250px; }
+    .quiz-row { background: #ffffff; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px; font-weight: bold; transition: all 0.3s; }
     .quiz-row.disabled { opacity: 0.4; pointer-events: none; }
     .quiz-row-header { color: #475569; margin-bottom: 4px; text-align: center; }
     
@@ -61,9 +62,9 @@
     .grid-item { display: flex; align-items: center; gap: 4px; }
 
     .drop-box {
-      width: 68px; height: 30px; border: 2px dashed #cbd5e1; border-radius: 6px;
+      width: 64px; height: 30px; border: 2px dashed #cbd5e1; border-radius: 6px;
       background: #fafafa; display: flex; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: bold; transition: all 0.2s;
+      font-size: 11px; font-weight: bold; transition: all 0.2s; user-select: none;
     }
     .drop-box.active-target {
       border-color: #3b82f6;
@@ -80,8 +81,8 @@
       100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
     }
 
-    .card-deck { display: flex; justify-content: center; gap: 12px; margin-top: 20px; padding: 12px; background: #f1f5f9; border-radius: 12px; }
-    .drag-card { padding: 8px 20px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 20px; font-weight: bold; color: #334155; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.04); font-size: 13px; user-select: none; }
+    .card-deck { display: flex; justify-content: center; gap: 10px; margin-top: 15px; padding: 12px; background: #f1f5f9; border-radius: 12px; flex-wrap: wrap; }
+    .drag-card { padding: 8px 20px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 20px; font-weight: bold; color: #334155; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.04); font-size: 13px; user-select: none; touch-action: none; }
     .drag-card:active { cursor: grabbing; transform: scale(1.05); }
 
     .controls { display: flex; justify-content: center; gap: 12px; margin-top: 15px; }
@@ -288,11 +289,9 @@
     drawWipe();
   }
 
-  // 캔버스 화살표 및 에너지 그래프 그리기
   function drawEnergyRatioGraph(ctx, hPercent, isUp) {
     ctx.clearRect(0, 0, 220, 350);
 
-    // 1. 좌측 화살표
     ctx.strokeStyle = isUp ? '#2563eb' : '#e11d48';
     ctx.lineWidth = 26;
     ctx.beginPath(); ctx.moveTo(35, 300); ctx.lineTo(35, 50); ctx.stroke();
@@ -306,54 +305,43 @@
     }
     ctx.closePath(); ctx.fill();
 
-    // 2. 우측 삼각형 에너지 분할 그래프 (gx: 80~200, gy: 50~300)
     const gx = 80, gy = 50, gw = 120, gh = 250;
 
-    // 배경 모눈종이 격자선
     ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
     for(let y = gy; y <= gy + gh; y += 25) {
       ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + gw, y); ctx.stroke();
     }
 
-    // 외곽 테두리
     ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2;
     ctx.strokeRect(gx, gy, gw, gh);
 
-    // 높이 포인터 선 Y좌표 (gy = 50: 100%, gy+gh = 300: 0%)
     const currentY = gy + gh - (gh * (hPercent / 100));
 
-    // ★ [클리핑 설정 - 상승/낙하 모드별 완벽 분기]
     ctx.save();
     ctx.beginPath();
 
     if (isUp) {
-      // 올라갈 때(상승): 위쪽은 안보이고, '아래쪽' 영역만 보이게 설정
       ctx.rect(gx - 5, currentY, gw + 10, (gy + gh) - currentY + 5);
     } else {
-      // 내려올 때(낙하): 선생님의 의도대로 '위쪽' 영역만 보이게 유지
       ctx.rect(gx - 5, gy - 5, gw + 10, currentY - gy + 5);
     }
     ctx.clip();
 
-    // 위치 에너지 (파란색 영역)
     ctx.fillStyle = 'rgba(147, 197, 253, 0.85)';
     ctx.beginPath();
     ctx.moveTo(gx, gy); ctx.lineTo(gx + gw, gy); ctx.lineTo(gx + gw, gy + gh);
     ctx.closePath(); ctx.fill();
 
-    // 운동 에너지 (분홍색 영역)
     ctx.fillStyle = 'rgba(254, 205, 211, 0.85)';
     ctx.beginPath();
     ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh); ctx.lineTo(gx + gw, gy + gh);
     ctx.closePath(); ctx.fill();
 
-    // 대각선 구분선
     ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
 
-    ctx.restore(); // 클리핑 영역 해제
+    ctx.restore();
 
-    // 3. 현재 높이 포인터 가로 점선 및 노란색 핸들
     ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.moveTo(20, currentY); ctx.lineTo(gx + gw + 5, currentY); ctx.stroke();
     ctx.setLineDash([]);
@@ -362,7 +350,6 @@
     ctx.beginPath(); ctx.arc(35, currentY, 8, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
 
-    // 4. 에너지 라벨 및 수치 정보
     ctx.fillStyle = '#1e3a8a'; ctx.font = 'bold 12px Pretendard'; ctx.fillText('위치 에너지', gx + 45, gy - 10);
     ctx.fillStyle = '#9f1239'; ctx.font = 'bold 12px Pretendard'; ctx.fillText('운동 에너지', gx + 5, gy + gh + 18);
 
@@ -373,11 +360,10 @@
     ctx.fillText(`[위치E ${potE}% : 운동E ${kinE}%]`, gx, gy + gh + 50);
   }
 
-  // 캔버스 드래그/클릭 높이 제어
-  function handleCanvasHeightControl(e, canvas, isUp) {
+  function handleCanvasHeightControl(clientY, canvas, isUp) {
     if (isAnimating) return;
     const rect = canvas.getBoundingClientRect();
-    const clickY = e.clientY - rect.top;
+    const clickY = clientY - rect.top;
 
     const minY = 50, maxY = 300;
     const clampedY = Math.max(minY, Math.min(maxY, clickY));
@@ -388,25 +374,42 @@
     drawEnergyRatioGraph(ctx, hPercent, isUp);
   }
 
-  function setupCanvasDrag(canvas, isUp) {
+  function setupCanvasEvents(canvas, isUp) {
     canvas.addEventListener('mousedown', (e) => {
       if (currentPhase === 'UP_SUMMARY_DONE' || currentPhase === 'ALL_DONE') {
         isDraggingArrow = true;
-        handleCanvasHeightControl(e, canvas, isUp);
+        handleCanvasHeightControl(e.clientY, canvas, isUp);
       }
     });
 
     canvas.addEventListener('mousemove', (e) => {
       if (isDraggingArrow && (currentPhase === 'UP_SUMMARY_DONE' || currentPhase === 'ALL_DONE')) {
-        handleCanvasHeightControl(e, canvas, isUp);
+        handleCanvasHeightControl(e.clientY, canvas, isUp);
       }
     });
 
     window.addEventListener('mouseup', () => { isDraggingArrow = false; });
+
+    // 모바일 터치 이벤트 추가
+    canvas.addEventListener('touchstart', (e) => {
+      if (currentPhase === 'UP_SUMMARY_DONE' || currentPhase === 'ALL_DONE') {
+        isDraggingArrow = true;
+        handleCanvasHeightControl(e.touches[0].clientY, canvas, isUp);
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e) => {
+      if (isDraggingArrow && (currentPhase === 'UP_SUMMARY_DONE' || currentPhase === 'ALL_DONE')) {
+        e.preventDefault();
+        handleCanvasHeightControl(e.touches[0].clientY, canvas, isUp);
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', () => { isDraggingArrow = false; });
   }
 
-  setupCanvasDrag(upCanvas, true);
-  setupCanvasDrag(downCanvas, false);
+  setupCanvasEvents(upCanvas, true);
+  setupCanvasEvents(downCanvas, false);
 
   function setMsg(text, type = 'normal') {
     const msgBox = document.getElementById('msg-box');
@@ -451,7 +454,7 @@
 
     if (currentPhase === 'UP_CORRECT_ALL') {
       currentPhase = 'UP_SUMMARY_ANIM';
-      setMsg("✨ [상승 운동 내용 정리]\n화살표 위를 마우스로 클릭하거나 위아래로 드래그하여 아래쪽 에너지 면적 변화를 확인해보세요!", 'info');
+      setMsg("✨ [상승 운동 내용 정리]\n화살표 위를 터치하거나 위아래로 드래그하여 아래쪽 에너지 면적 변화를 확인해보세요!", 'info');
       
       animateWipeArrowWithGraph(upCtx, true, () => {
         currentPhase = 'UP_SUMMARY_DONE';
@@ -474,7 +477,7 @@
 
     } else if (currentPhase === 'DOWN_CORRECT_ALL') {
       currentPhase = 'DOWN_SUMMARY_ANIM';
-      setMsg("✨ [낙하 운동 내용 정리]\n화살표 위를 마우스로 클릭하거나 위아래로 드래그하여 낙하 시 위쪽 에너지 면적 변화를 확인해보세요!", 'info');
+      setMsg("✨ [낙하 운동 내용 정리]\n화살표 위를 터치하거나 위아래로 드래그하여 낙하 시 위쪽 에너지 면적 변화를 확인해보세요!", 'info');
 
       animateWipeArrowWithGraph(downCtx, false, () => {
         currentPhase = 'ALL_DONE';
@@ -533,12 +536,82 @@
     step();
   }
 
+  // --- 드래그 앤 드롭 및 터치 이벤트 제어 ---
   let draggedVal = null;
+  let activeTouchCard = null;
+  let touchClone = null;
+
   document.querySelectorAll('.drag-card').forEach(card => {
+    // PC 드래그
     card.addEventListener('dragstart', (e) => {
       draggedVal = e.target.getAttribute('data-val');
     });
+
+    // 모바일 터치 드래그
+    card.addEventListener('touchstart', handleTouchStart, { passive: false });
+    card.addEventListener('touchmove', handleTouchMove, { passive: false });
+    card.addEventListener('touchend', handleTouchEnd, { passive: false });
   });
+
+  function handleTouchStart(e) {
+    if (isAnimating) return;
+    activeTouchCard = e.currentTarget;
+    draggedVal = activeTouchCard.getAttribute('data-val');
+
+    const touch = e.touches[0];
+    
+    // 복제 드래그 카드 시각화
+    touchClone = activeTouchCard.cloneNode(true);
+    touchClone.style.position = 'fixed';
+    touchClone.style.opacity = '0.85';
+    touchClone.style.pointerEvents = 'none';
+    touchClone.style.zIndex = '1000';
+    touchClone.style.left = `${touch.clientX - 35}px`;
+    touchClone.style.top = `${touch.clientY - 15}px`;
+    document.body.appendChild(touchClone);
+  }
+
+  function handleTouchMove(e) {
+    if (!touchClone) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    touchClone.style.left = `${touch.clientX - 35}px`;
+    touchClone.style.top = `${touch.clientY - 15}px`;
+
+    const dropBox = getDropBoxAtPoint(touch.clientX, touch.clientY);
+    document.querySelectorAll('.drop-box').forEach(box => box.classList.remove('hover'));
+    
+    if (dropBox) {
+      const boxStep = dropBox.getAttribute('data-step');
+      const boxType = dropBox.getAttribute('data-type');
+      if (isCurrentStepBox(boxStep) && (boxType === 'height' || boxType === 'speed')) {
+        dropBox.classList.add('hover');
+      }
+    }
+  }
+
+  function handleTouchEnd(e) {
+    if (!touchClone) return;
+    const touch = e.changedTouches[0];
+    const dropBox = getDropBoxAtPoint(touch.clientX, touch.clientY);
+
+    document.querySelectorAll('.drop-box').forEach(box => box.classList.remove('hover'));
+
+    if (touchClone) {
+      touchClone.remove();
+      touchClone = null;
+    }
+
+    if (dropBox) {
+      processDropAction(dropBox);
+    }
+    activeTouchCard = null;
+  }
+
+  function getDropBoxAtPoint(x, y) {
+    const elements = document.elementsFromPoint(x, y);
+    return elements.find(el => el.classList.contains('drop-box'));
+  }
 
   document.querySelectorAll('.drop-box').forEach(box => {
     box.addEventListener('dragover', (e) => {
@@ -555,48 +628,52 @@
     box.addEventListener('drop', (e) => {
       e.preventDefault();
       box.classList.remove('hover');
-      const boxStep = box.getAttribute('data-step');
-      const boxType = box.getAttribute('data-type');
+      processDropAction(box);
+    });
+  });
 
-      if (!isCurrentStepBox(boxStep) || (boxType !== 'height' && boxType !== 'speed') || isAnimating) {
-        alert("높이 또는 속력 상자의 반짝이는 빈칸에 드래그해주세요!");
+  function processDropAction(box) {
+    const boxStep = box.getAttribute('data-step');
+    const boxType = box.getAttribute('data-type');
+
+    if (!isCurrentStepBox(boxStep) || (boxType !== 'height' && boxType !== 'speed') || isAnimating) {
+      alert("높이 또는 속력 상자의 반짝이는 빈칸에 드래그해주세요!");
+      return;
+    }
+
+    if (draggedVal) {
+      const correctAns = box.getAttribute('data-ans');
+
+      if (draggedVal !== correctAns) {
+        setMsg("❌ 틀린 항목이 있습니다. 물리 변수의 관계를 다시 점검하세요!", 'error');
         return;
       }
 
-      if (draggedVal) {
-        const correctAns = box.getAttribute('data-ans');
+      box.textContent = draggedVal;
+      box.setAttribute('data-user-val', draggedVal);
+      box.classList.add('filled');
+      box.classList.remove('active-target');
 
-        if (draggedVal !== correctAns) {
-          setMsg("❌ 틀린 항목이 있습니다. 물리 변수의 관계를 다시 점검하세요!", 'error');
-          return;
+      const parentRow = box.closest('.quiz-row');
+      if (boxType === 'height') {
+        const peBox = parentRow.querySelector('.drop-box[data-type="pe"]');
+        if (peBox) {
+          peBox.textContent = draggedVal;
+          peBox.setAttribute('data-user-val', draggedVal);
+          peBox.classList.add('auto-filled');
         }
-
-        box.textContent = draggedVal;
-        box.setAttribute('data-user-val', draggedVal);
-        box.classList.add('filled');
-        box.classList.remove('active-target');
-
-        const parentRow = box.closest('.quiz-row');
-        if (boxType === 'height') {
-          const peBox = parentRow.querySelector('.drop-box[data-type="pe"]');
-          if (peBox) {
-            peBox.textContent = draggedVal;
-            peBox.setAttribute('data-user-val', draggedVal);
-            peBox.classList.add('auto-filled');
-          }
-        } else if (boxType === 'speed') {
-          const keBox = parentRow.querySelector('.drop-box[data-type="ke"]');
-          if (keBox) {
-            keBox.textContent = draggedVal;
-            keBox.setAttribute('data-user-val', draggedVal);
-            keBox.classList.add('auto-filled');
-          }
+      } else if (boxType === 'speed') {
+        const keBox = parentRow.querySelector('.drop-box[data-type="ke"]');
+        if (keBox) {
+          keBox.textContent = draggedVal;
+          keBox.setAttribute('data-user-val', draggedVal);
+          keBox.classList.add('auto-filled');
         }
-
-        checkCurrentStepProgress(boxStep);
       }
-    });
-  });
+
+      checkCurrentStepProgress(boxStep);
+    }
+  }
 
   function isCurrentStepBox(boxStep) {
     if (currentPhase === 'UP_0' && boxStep === 'up-0') return true;
