@@ -32,29 +32,47 @@
 
     .stage-container { display: flex; width: 100%; gap: 12px; align-items: stretch; justify-content: center; }
     
-    /* 농구공 캔버스 영역 */
     .canvas-wrapper {
-      position: relative; width: 220px; background: #ffffff; border: 1px solid #cbd5e1;
+      position: relative; width: 250px; height: 380px; background: #ffffff; border: 1px solid #cbd5e1;
       border-radius: 12px; display: flex; align-items: center; justify-content: flex-start;
       overflow: hidden; padding: 5px;
     }
     canvas { background: transparent; display: block; flex-shrink: 0; }
 
-    /* 농구공 우측 옆 - 에너지 전환 드래그 박스 영역 */
     .canvas-right-quiz {
-      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-      width: 120px; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 10px;
-      padding: 12px 8px; text-align: center; font-size: 11px; font-weight: bold; color: #047857; z-index: 10;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; gap: 4px;
+      position: absolute; right: 8px; top: 10px; bottom: 10px;
+      width: 150px; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 12px;
+      padding: 10px 6px; text-align: center; font-size: 11px; font-weight: bold; color: #047857; z-index: 10;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: space-between;
     }
     .canvas-right-quiz.down-style { background: #fff1f2; border-color: #fecdd3; color: #be123c; }
 
     .quiz-instruction-label {
-      font-size: 11px; font-weight: 800; color: #065f46; margin-bottom: 4px; line-height: 1.2;
+      font-size: 11px; font-weight: 800; color: #065f46; line-height: 1.3; background: rgba(255,255,255,0.9);
+      padding: 6px 4px; border-radius: 6px; width: 100%; border: 1px solid #a7f3d0;
     }
-    .canvas-right-quiz.down-style .quiz-instruction-label { color: #9f1239; }
+    .canvas-right-quiz.down-style .quiz-instruction-label { color: #9f1239; border-color: #fecdd3; }
 
-    .quiz-group { display: flex; flex-direction: column; justify-content: space-between; height: 360px; flex: 1; }
+    .arrow-connector {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      flex: 1; height: 210px; width: 100%; position: relative; margin: 4px 0;
+    }
+    .arrow-line {
+      width: 5px; background-color: #10b981; height: 100%; border-radius: 2px;
+    }
+    .arrow-head-up {
+      width: 0; height: 0; 
+      border-left: 9px solid transparent; border-right: 9px solid transparent;
+      border-bottom: 16px solid #10b981; margin-bottom: -1px;
+    }
+    .arrow-head-down {
+      width: 0; height: 0; 
+      border-left: 9px solid transparent; border-right: 9px solid transparent;
+      border-top: 16px solid #e11d48; margin-top: -1px;
+    }
+    .canvas-right-quiz.down-style .arrow-line { background-color: #e11d48; }
+
+    .quiz-group { display: flex; flex-direction: column; justify-content: space-between; height: 380px; flex: 1; }
     .quiz-row { background: #ffffff; padding: 6px 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: bold; transition: all 0.3s; }
     .quiz-row.disabled { opacity: 0.4; pointer-events: none; }
     .quiz-row-header { color: #475569; margin-bottom: 4px; text-align: center; }
@@ -72,17 +90,15 @@
     .drop-box.filled { border-style: solid; border-color: #3b82f6; background-color: #eff6ff; color: #1d4ed8; }
     .drop-box.auto-filled { border-style: solid; border-color: #8b5cf6; background-color: #f3e8ff; color: #6b21a8; }
 
-    /* 우측 전용 드래그 상자 (농구공 이동 방향에 맞춘 드래그존) */
     .transform-box {
-      display: flex; width: 100px; height: 32px; border: 2px dashed #0d9488; border-radius: 6px;
+      display: flex; width: 115px; height: 34px; border: 2px dashed #0d9488; border-radius: 8px;
       background: #ffffff; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: bold; color: #0f766e; transition: all 0.3s;
+      font-size: 11px; font-weight: bold; color: #0f766e; transition: all 0.3s; z-index: 2;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04); flex-shrink: 0;
     }
     .transform-box.filled { border-style: solid; background-color: #ccfbf1; border-color: #0d9488; color: #115e59; }
     .canvas-right-quiz.down-style .transform-box { border-color: #e11d48; color: #9f1239; }
     .canvas-right-quiz.down-style .transform-box.filled { background-color: #ffe4e6; border-color: #e11d48; color: #9f1239; }
-
-    .arrow-icon { font-size: 12px; font-weight: bold; margin: 1px 0; }
 
     @keyframes pulse-border {
       0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
@@ -106,7 +122,6 @@
     .btn-reset { background-color: #64748b; color: white; }
     .btn-reset:hover { background-color: #475569; }
 
-    /* 터치 클론 이미지 */
     .touch-clone {
       position: fixed; pointer-events: none; z-index: 9999; opacity: 0.9;
       transform: translate(-50%, -50%) scale(1.08); box-shadow: 0 8px 16px rgba(0,0,0,0.25);
@@ -126,14 +141,22 @@
     <div class="section-panel" id="upPanel">
       <div class="panel-title bg-up">▲ 올라갈 때 (상승)</div>
       <div class="stage-container">
-        <!-- 캔버스 및 오른쪽 옆 에너지 전환 영역 -->
         <div class="canvas-wrapper">
-          <canvas id="upCanvas" width="75" height="360"></canvas>
+          <canvas id="upCanvas" width="75" height="380"></canvas>
           <div class="canvas-right-quiz hidden" id="upTransformQuiz">
-            <div class="quiz-instruction-label">⚡ 에너지 전환을<br>드래그하세요!</div>
-            <div class="transform-box" data-step="up-trans" data-slot="from" data-ans="운동 에너지">드래그</div>
-            <div class="arrow-icon">▲</div>
+            <div class="quiz-instruction-label">⚡ (드래그)가<br>(드래그)로 전환</div>
+            
+            <!-- 위쪽: 도착점 (위치 에너지) -->
             <div class="transform-box" data-step="up-trans" data-slot="to" data-ans="위치 에너지">드래그</div>
+            
+            <!-- 5cm 이상 확장된 위쪽 화살표 -->
+            <div class="arrow-connector">
+              <div class="arrow-head-up"></div>
+              <div class="arrow-line"></div>
+            </div>
+            
+            <!-- 아래쪽: 출발점 (운동 에너지) -->
+            <div class="transform-box" data-step="up-trans" data-slot="from" data-ans="운동 에너지">드래그</div>
           </div>
         </div>
 
@@ -173,13 +196,21 @@
     <div class="section-panel hidden" id="downPanel">
       <div class="panel-title bg-down">▼ 내려올 때 (낙하)</div>
       <div class="stage-container">
-        <!-- 캔버스 및 오른쪽 옆 에너지 전환 영역 -->
         <div class="canvas-wrapper">
-          <canvas id="downCanvas" width="75" height="360"></canvas>
+          <canvas id="downCanvas" width="75" height="380"></canvas>
           <div class="canvas-right-quiz down-style hidden" id="downTransformQuiz">
-            <div class="quiz-instruction-label">⚡ 에너지 전환을<br>드래그하세요!</div>
+            <div class="quiz-instruction-label">⚡ (드래그)가<br>(드래그)로 전환</div>
+            
+            <!-- 위쪽: 출발점 (위치 에너지) -->
             <div class="transform-box" data-step="down-trans" data-slot="from" data-ans="위치 에너지">드래그</div>
-            <div class="arrow-icon">▼</div>
+            
+            <!-- 5cm 이상 확장된 아래쪽 화살표 -->
+            <div class="arrow-connector">
+              <div class="arrow-line"></div>
+              <div class="arrow-head-down"></div>
+            </div>
+            
+            <!-- 아래쪽: 도착점 (운동 에너지) -->
             <div class="transform-box" data-step="down-trans" data-slot="to" data-ans="운동 에너지">드래그</div>
           </div>
         </div>
@@ -239,20 +270,20 @@
   const downCtx = downCanvas.getContext('2d');
 
   let currentPhase = 'INIT';
-  let upY = 320;
+  let upY = 340;
   let downY = 40;
   let isAnimating = false;
 
-  const targetYMapUp = { 'UP_0': 320, 'UP_1': 180, 'UP_2': 40 };
-  const targetYMapDown = { 'DOWN_0': 40, 'DOWN_1': 180, 'DOWN_2': 320 };
+  const targetYMapUp = { 'UP_0': 340, 'UP_1': 190, 'UP_2': 40 };
+  const targetYMapDown = { 'DOWN_0': 40, 'DOWN_1': 190, 'DOWN_2': 340 };
 
   function drawStage(ctx, ballY, isUp) {
-    ctx.clearRect(0, 0, 75, 360);
+    ctx.clearRect(0, 0, 75, 380);
     ctx.strokeStyle = isUp ? '#93c5fd' : '#fca5a5';
     ctx.lineWidth = 4;
     ctx.setLineDash([6, 6]);
     ctx.beginPath();
-    ctx.moveTo(35, 30); ctx.lineTo(35, 330);
+    ctx.moveTo(35, 30); ctx.lineTo(35, 350);
     ctx.stroke();
     ctx.setLineDash([]);
 
@@ -261,7 +292,7 @@
     if (isUp) {
       ctx.moveTo(35, 15); ctx.lineTo(27, 30); ctx.lineTo(43, 30);
     } else {
-      ctx.moveTo(35, 345); ctx.lineTo(27, 330); ctx.lineTo(43, 330);
+      ctx.moveTo(35, 365); ctx.lineTo(27, 350); ctx.lineTo(43, 350);
     }
     ctx.fill();
 
@@ -303,7 +334,7 @@
     const actionBtn = document.getElementById('actionBtn');
     if (currentPhase === 'INIT') {
       currentPhase = 'UP_0';
-      upY = 320;
+      upY = 340;
       drawStage(upCtx, upY, true);
       updateStepUI();
       actionBtn.disabled = true;
@@ -368,14 +399,12 @@
 
   let draggedVal = null;
 
-  // PC 마우스 드래그
   document.querySelectorAll('.drag-card').forEach(card => {
     card.addEventListener('dragstart', (e) => {
       draggedVal = e.target.getAttribute('data-val');
     });
   });
 
-  // 모바일 터치 드래그 앤 드롭
   let activeClone = null;
 
   document.querySelectorAll('.drag-card').forEach(card => {
@@ -422,7 +451,6 @@
     }
   }
 
-  // PC 마우스 드래그 오버 / 드롭
   document.querySelectorAll('.drop-box').forEach(box => {
     box.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -485,7 +513,6 @@
     }
   }
 
-  // 에너지 전환 드래그 상자 처리
   document.querySelectorAll('.transform-box').forEach(box => {
     box.addEventListener('dragover', (e) => e.preventDefault());
     box.addEventListener('drop', (e) => {
@@ -550,7 +577,7 @@
         currentPhase = 'UP_TRANS_QUIZ';
         updateStepUI();
         document.getElementById('upTransformQuiz').classList.remove('hidden');
-        setMsg("⚡ [농구공 우측 퀴즈]\n공이 위로 올라갈 때는 어떤 에너지가 어떤 에너지로 전환되는지 오른쪽 박스로 드래그하세요!", 'info');
+        setMsg("⚡ [농구공 우측 퀴즈]\n공이 위로 올라갈 때는 어떤 에너지가 어떤 에너지로 전환되는지 드래그하세요!", 'info');
 
       } else if (currentPhase === 'DOWN_0') {
         setMsg("🎉 정답입니다!\n②번 [낙하 중(중간)]의 변화를 맞추면 공이 내려옵니다.", 'success');
@@ -568,7 +595,7 @@
         currentPhase = 'DOWN_TRANS_QUIZ';
         updateStepUI();
         document.getElementById('downTransformQuiz').classList.remove('hidden');
-        setMsg("⚡ [농구공 우측 퀴즈]\n공이 아래로 내려올 때는 어떤 에너지가 어떤 에너지로 전환되는지 오른쪽 박스로 드래그하세요!", 'info');
+        setMsg("⚡ [농구공 우측 퀴즈]\n공이 아래로 내려올 때는 어떤 에너지가 어떤 에너지로 전환되는지 드래그하세요!", 'info');
       }
     }
   }
@@ -606,7 +633,7 @@
 
   function resetApp() {
     currentPhase = 'INIT';
-    upY = 320;
+    upY = 340;
     downY = 40;
     isAnimating = false;
 
