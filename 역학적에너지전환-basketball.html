@@ -2,47 +2,47 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>중3 과학: 공의 상승과 낙하 - 역학적 에너지 시각적 분석</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
-    body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 15px; touch-action: manipulation; }
 
-    .app-card { background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.06); padding: 25px; width: 940px; border: 1px solid #e2e8f0; }
-    h1 { font-size: 22px; color: #1e293b; text-align: center; margin-bottom: 5px; }
-    p.subtitle { text-align: center; color: #64748b; font-size: 14px; margin-bottom: 20px; }
+    .app-card { background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.06); padding: 20px; width: 100%; max-width: 940px; border: 1px solid #e2e8f0; }
+    h1 { font-size: 20px; color: #1e293b; text-align: center; margin-bottom: 5px; }
+    p.subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 15px; }
 
     #msg-box {
-      width: 100%; padding: 14px 18px; background-color: #fffbe3; border: 2px solid #fde047;
-      border-radius: 10px; font-size: 15px; font-weight: bold; color: #713f12; text-align: center;
-      margin-bottom: 20px; line-height: 1.5; transition: all 0.3s ease; white-space: pre-line;
+      width: 100%; padding: 12px 15px; background-color: #fffbe3; border: 2px solid #fde047;
+      border-radius: 10px; font-size: 14px; font-weight: bold; color: #713f12; text-align: center;
+      margin-bottom: 15px; line-height: 1.4; transition: all 0.3s ease; white-space: pre-line;
     }
 
-    .workspace { display: flex; gap: 20px; justify-content: center; align-items: flex-start; min-height: 400px; }
+    .workspace { display: flex; gap: 15px; justify-content: center; align-items: flex-start; min-height: 380px; flex-wrap: wrap; }
 
     .section-panel {
-      flex: 1; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 15px;
-      display: flex; flex-direction: column; align-items: center; transition: all 0.5s ease; max-width: 580px;
+      flex: 1; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px;
+      display: flex; flex-direction: column; align-items: center; transition: all 0.5s ease; min-width: 300px; max-width: 580px; width: 100%;
     }
     .section-panel.hidden { display: none !important; }
 
-    .panel-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding: 6px 16px; border-radius: 20px; color: white; }
+    .panel-title { font-size: 15px; font-weight: bold; margin-bottom: 10px; padding: 5px 14px; border-radius: 20px; color: white; }
     .bg-up { background-color: #3b82f6; }
     .bg-down { background-color: #f43f5e; }
 
-    .stage-container { display: flex; width: 100%; gap: 12px; align-items: center; justify-content: center; }
+    .stage-container { display: flex; width: 100%; gap: 10px; align-items: center; justify-content: center; }
     canvas { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 10px; cursor: default; }
 
     .quiz-group { display: flex; flex-direction: column; justify-content: space-between; height: 350px; flex: 1; }
-    .quiz-row { background: #ffffff; padding: 8px 10px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 12px; font-weight: bold; transition: all 0.3s; }
+    .quiz-row { background: #ffffff; padding: 6px 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: bold; transition: all 0.3s; }
     .quiz-row.disabled { opacity: 0.4; pointer-events: none; }
     .quiz-row-header { color: #475569; margin-bottom: 4px; text-align: center; }
     
-    .quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .grid-item { display: flex; align-items: center; gap: 4px; }
+    .quiz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .grid-item { display: flex; align-items: center; gap: 3px; }
 
     .drop-box {
-      width: 68px; height: 30px; border: 2px dashed #cbd5e1; border-radius: 6px;
+      width: 60px; height: 30px; border: 2px dashed #cbd5e1; border-radius: 6px;
       background: #fafafa; display: flex; align-items: center; justify-content: center;
       font-size: 11px; font-weight: bold; transition: all 0.2s;
     }
@@ -51,17 +51,17 @@
     .drop-box.filled { border-style: solid; border-color: #3b82f6; background-color: #eff6ff; color: #1d4ed8; }
     .drop-box.auto-filled { border-style: solid; border-color: #8b5cf6; background-color: #f3e8ff; color: #6b21a8; }
 
-    /* 🎨 에너지 전환 전용 드래그 박스 (새로운 에메랄드/민트 색상 스킨) */
+    /* 에너지 전환 전용 드래그 박스 */
     .transform-box {
-      width: 95px; height: 36px; border: 2px dashed #0d9488; border-radius: 8px;
+      width: 90px; height: 34px; border: 2px dashed #0d9488; border-radius: 8px;
       background: #f0fdf4; display: inline-flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: bold; color: #0f766e; margin: 0 4px; transition: all 0.3s;
+      font-size: 12px; font-weight: bold; color: #0f766e; margin: 0 4px; transition: all 0.3s;
     }
     .transform-box.filled { border-style: solid; background-color: #ccfbf1; border-color: #0d9488; color: #115e59; }
 
     .transform-quiz-container {
-      width: 100%; margin-top: 10px; padding: 14px; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 10px;
-      text-align: center; font-size: 14px; font-weight: bold; color: #047857;
+      width: 100%; margin-top: 10px; padding: 12px; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 10px;
+      text-align: center; font-size: 13px; font-weight: bold; color: #047857;
     }
 
     @keyframes pulse-border {
@@ -70,13 +70,12 @@
       100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
     }
 
-    .card-deck { display: flex; justify-content: center; gap: 10px; margin-top: 20px; padding: 12px; background: #f1f5f9; border-radius: 12px; flex-wrap: wrap; }
-    .drag-card { padding: 8px 16px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 20px; font-weight: bold; color: #334155; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.04); font-size: 13px; user-select: none; }
+    .card-deck { display: flex; justify-content: center; gap: 8px; margin-top: 15px; padding: 10px; background: #f1f5f9; border-radius: 12px; flex-wrap: wrap; }
+    .drag-card { padding: 8px 14px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 20px; font-weight: bold; color: #334155; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.04); font-size: 12px; user-select: none; touch-action: none; }
     .drag-card.energy-card { border-color: #14b8a6; background: #f0fdf4; color: #0f766e; }
-    .drag-card:active { cursor: grabbing; transform: scale(1.05); }
 
-    .controls { display: flex; justify-content: center; gap: 12px; margin-top: 15px; }
-    .btn { padding: 10px 22px; font-size: 14px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .controls { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
+    .btn { padding: 10px 20px; font-size: 13px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
     .btn-action { background-color: #3b82f6; color: white; }
     .btn-action:hover { background-color: #2563eb; }
     .btn-action:disabled { background-color: #cbd5e1; cursor: not-allowed; }
@@ -84,6 +83,12 @@
     .btn-reset:hover { background-color: #475569; }
     
     .hidden { display: none !important; }
+
+    /* 터치 드래그 이동 시 따라다니는 클론 요소 스타일 */
+    .touch-clone {
+      position: fixed; pointer-events: none; z-index: 9999; opacity: 0.85; transform: translate(-50%, -50%) scale(1.1);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
@@ -99,7 +104,7 @@
     <div class="section-panel" id="upPanel">
       <div class="panel-title bg-up">▲ 올라갈 때 (상승)</div>
       <div class="stage-container">
-        <canvas id="upCanvas" width="220" height="350"></canvas>
+        <canvas id="upCanvas" width="200" height="350"></canvas>
         <div class="quiz-group">
           <div class="quiz-row disabled" id="upRow-2">
             <div class="quiz-row-header">③ 최고점 (상단)</div>
@@ -143,7 +148,7 @@
     <div class="section-panel hidden" id="downPanel">
       <div class="panel-title bg-down">▼ 내려올 때 (낙하)</div>
       <div class="stage-container">
-        <canvas id="downCanvas" width="220" height="350"></canvas>
+        <canvas id="downCanvas" width="200" height="350"></canvas>
         <div class="quiz-group">
           <div class="quiz-row disabled" id="downRow-0">
             <div class="quiz-row-header">① 낙하 직전 (상단)</div>
@@ -214,25 +219,25 @@
   const targetYMapDown = { 'DOWN_0': 50, 'DOWN_1': 175, 'DOWN_2': 300 };
 
   function drawStage(ctx, ballY, isUp) {
-    ctx.clearRect(0, 0, 220, 350);
+    ctx.clearRect(0, 0, 200, 350);
     ctx.strokeStyle = isUp ? '#93c5fd' : '#fca5a5';
     ctx.lineWidth = 4;
     ctx.setLineDash([6, 6]);
     ctx.beginPath();
-    ctx.moveTo(60, 50); ctx.lineTo(60, 300);
+    ctx.moveTo(50, 50); ctx.lineTo(50, 300);
     ctx.stroke();
     ctx.setLineDash([]);
 
     ctx.fillStyle = isUp ? '#3b82f6' : '#f43f5e';
     ctx.beginPath();
     if (isUp) {
-      ctx.moveTo(60, 35); ctx.lineTo(52, 50); ctx.lineTo(68, 50);
+      ctx.moveTo(50, 35); ctx.lineTo(42, 50); ctx.lineTo(58, 50);
     } else {
-      ctx.moveTo(60, 315); ctx.lineTo(52, 300); ctx.lineTo(68, 300);
+      ctx.moveTo(50, 315); ctx.lineTo(42, 300); ctx.lineTo(58, 300);
     }
     ctx.fill();
 
-    drawBasketball(ctx, 60, ballY);
+    drawBasketball(ctx, 50, ballY);
   }
 
   function drawBasketball(ctx, x, y) {
@@ -334,13 +339,62 @@
   }
 
   let draggedVal = null;
+
+  // PC 마우스 드래그 설정
   document.querySelectorAll('.drag-card').forEach(card => {
     card.addEventListener('dragstart', (e) => {
       draggedVal = e.target.getAttribute('data-val');
     });
   });
 
-  // 표 드래그 상자 처리
+  // 📱 모바일/태블릿 전용 터치 드래그 앤 드롭 구현
+  let activeClone = null;
+
+  document.querySelectorAll('.drag-card').forEach(card => {
+    card.addEventListener('touchstart', (e) => {
+      draggedVal = card.getAttribute('data-val');
+      const touch = e.touches[0];
+
+      activeClone = card.cloneNode(true);
+      activeClone.classList.add('touch-clone');
+      document.body.appendChild(activeClone);
+
+      moveClone(touch);
+    }, { passive: false });
+
+    card.addEventListener('touchmove', (e) => {
+      if (!activeClone) return;
+      e.preventDefault(); // 스크롤 방지
+      const touch = e.touches[0];
+      moveClone(touch);
+    }, { passive: false });
+
+    card.addEventListener('touchend', (e) => {
+      if (!activeClone) return;
+      const touch = e.changedTouches[0];
+      activeClone.remove();
+      activeClone = null;
+
+      // 터치가 끝난 지점의 요소 감지
+      const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (dropTarget) {
+        const dropBox = dropTarget.closest('.drop-box');
+        const transformBox = dropTarget.closest('.transform-box');
+
+        if (dropBox) processDropBox(dropBox);
+        else if (transformBox) processTransformBox(transformBox);
+      }
+    });
+  });
+
+  function moveClone(touch) {
+    if (activeClone) {
+      activeClone.style.left = `${touch.clientX}px`;
+      activeClone.style.top = `${touch.clientY}px`;
+    }
+  }
+
+  // 표 드래그 상자 처리 (PC 마우스)
   document.querySelectorAll('.drop-box').forEach(box => {
     box.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -356,73 +410,81 @@
     box.addEventListener('drop', (e) => {
       e.preventDefault();
       box.classList.remove('hover');
-      const boxStep = box.getAttribute('data-step');
-      const boxType = box.getAttribute('data-type');
-
-      if (!isCurrentStepBox(boxStep) || (boxType !== 'height' && boxType !== 'speed') || isAnimating) {
-        alert("높이 또는 속력 상자의 반짝이는 빈칸에 드래그해주세요!");
-        return;
-      }
-
-      if (draggedVal) {
-        const correctAns = box.getAttribute('data-ans');
-
-        if (draggedVal !== correctAns) {
-          setMsg("❌ 틀린 항목이 있습니다. 물리 변수의 관계를 다시 점검하세요!", 'error');
-          return;
-        }
-
-        box.textContent = draggedVal;
-        box.setAttribute('data-user-val', draggedVal);
-        box.classList.add('filled');
-        box.classList.remove('active-target');
-
-        const parentRow = box.closest('.quiz-row');
-        if (boxType === 'height') {
-          const peBox = parentRow.querySelector('.drop-box[data-type="pe"]');
-          if (peBox) {
-            peBox.textContent = draggedVal;
-            peBox.setAttribute('data-user-val', draggedVal);
-            peBox.classList.add('auto-filled');
-          }
-        } else if (boxType === 'speed') {
-          const keBox = parentRow.querySelector('.drop-box[data-type="ke"]');
-          if (keBox) {
-            keBox.textContent = draggedVal;
-            keBox.setAttribute('data-user-val', draggedVal);
-            keBox.classList.add('auto-filled');
-          }
-        }
-
-        checkCurrentStepProgress(boxStep);
-      }
+      processDropBox(box);
     });
   });
 
-  // 에너지 전환 드래그 상자 처리
+  function processDropBox(box) {
+    const boxStep = box.getAttribute('data-step');
+    const boxType = box.getAttribute('data-type');
+
+    if (!isCurrentStepBox(boxStep) || (boxType !== 'height' && boxType !== 'speed') || isAnimating) {
+      alert("높이 또는 속력 상자의 반짝이는 빈칸에 드래그해주세요!");
+      return;
+    }
+
+    if (draggedVal) {
+      const correctAns = box.getAttribute('data-ans');
+
+      if (draggedVal !== correctAns) {
+        setMsg("❌ 틀린 항목이 있습니다. 물리 변수의 관계를 다시 점검하세요!", 'error');
+        return;
+      }
+
+      box.textContent = draggedVal;
+      box.setAttribute('data-user-val', draggedVal);
+      box.classList.add('filled');
+      box.classList.remove('active-target');
+
+      const parentRow = box.closest('.quiz-row');
+      if (boxType === 'height') {
+        const peBox = parentRow.querySelector('.drop-box[data-type="pe"]');
+        if (peBox) {
+          peBox.textContent = draggedVal;
+          peBox.setAttribute('data-user-val', draggedVal);
+          peBox.classList.add('auto-filled');
+        }
+      } else if (boxType === 'speed') {
+        const keBox = parentRow.querySelector('.drop-box[data-type="ke"]');
+        if (keBox) {
+          keBox.textContent = draggedVal;
+          keBox.setAttribute('data-user-val', draggedVal);
+          keBox.classList.add('auto-filled');
+        }
+      }
+
+      checkCurrentStepProgress(boxStep);
+    }
+  }
+
+  // 에너지 전환 드래그 상자 처리 (PC 마우스)
   document.querySelectorAll('.transform-box').forEach(box => {
     box.addEventListener('dragover', (e) => e.preventDefault());
     box.addEventListener('drop', (e) => {
       e.preventDefault();
-      const step = box.getAttribute('data-step');
-      
-      if ((currentPhase === 'UP_TRANS_QUIZ' && step === 'up-trans') || 
-          (currentPhase === 'DOWN_TRANS_QUIZ' && step === 'down-trans')) {
-        
-        const correctAns = box.getAttribute('data-ans');
-        if (draggedVal !== correctAns) {
-          setMsg("❌ 알맞은 에너지를 다시 드래그해보세요!", 'error');
-          return;
-        }
-
-        box.textContent = draggedVal;
-        box.setAttribute('data-user-val', draggedVal);
-        box.classList.add('filled');
-
-        checkTransformQuizProgress(step);
-      }
+      processTransformBox(box);
     });
   });
+
+  function processTransformBox(box) {
+    const step = box.getAttribute('data-step');
+    
+    if ((currentPhase === 'UP_TRANS_QUIZ' && step === 'up-trans') || 
+        (currentPhase === 'DOWN_TRANS_QUIZ' && step === 'down-trans')) {
+      
+      const correctAns = box.getAttribute('data-ans');
+      if (draggedVal !== correctAns) {
+        setMsg("❌ 알맞은 에너지를 다시 드래그해보세요!", 'error');
+        return;
+      }
+
+      box.textContent = draggedVal;
+      box.setAttribute('data-user-val', draggedVal);
+      box.classList.add('filled');
+
+      checkTransformQuizProgress(step);
+    }
+  }
 
   function isCurrentStepBox(boxStep) {
     if (currentPhase === 'UP_0' && boxStep === 'up-0') return true;
