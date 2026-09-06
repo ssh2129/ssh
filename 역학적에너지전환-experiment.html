@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>역학적 에너지 전환 실험 (Touch Supported & Canvas Graph)</title>
+    <title>역학적 에너지 전환 실험 (모바일 완벽 대응)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; touch-action: manipulation; }
         body { padding: 15px; background-color: #f4f6f9; user-select: none; -webkit-user-select: none; }
@@ -50,7 +50,7 @@
 
         /* Box 1: 실험 기구 */
         .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .draggable { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 4px; text-align: center; cursor: grab; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); touch-action: none; }
+        .draggable { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 4px; text-align: center; cursor: grab; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); touch-action: none; -webkit-user-drag: none; }
         .draggable:active { cursor: grabbing; opacity: 0.6; }
         .draggable svg { width: 42px; height: 42px; margin-bottom: 4px; pointer-events: none; }
         .draggable span { font-size: 11px; font-weight: bold; color: #334155; line-height: 1.2; word-break: keep-all; pointer-events: none; }
@@ -64,7 +64,7 @@
         .scale-plate { width: 100px; height: 10px; background: #94a3b8; border-radius: 3px; position: absolute; top: -10px; display: flex; justify-content: center; align-items: flex-end; }
         .scale-display { background: #1e293b; color: #22c55e; font-family: monospace; font-size: 16px; padding: 2px 8px; border-radius: 4px; margin-top: 10px; border: 1px solid #475569; }
         
-        .on-scale-ball { position: absolute; top: -26px; cursor: grab; z-index: 5; touch-action: none; }
+        .on-scale-ball { position: absolute; top: -26px; cursor: grab; z-index: 5; touch-action: none; -webkit-user-drag: none; }
 
         /* 전환 장치 영역 */
         .apparatus { width: 30px; height: 280px; background: #cbd5e1; border: 2px solid #64748b; position: relative; border-radius: 4px; display: flex; justify-content: center; }
@@ -118,7 +118,7 @@
 
         /* 카드 드래그 앤 드롭 영역 */
         .card-container { display: flex; justify-content: center; gap: 10px; margin-top: 12px; margin-bottom: 5px; flex-wrap: wrap; }
-        .state-card { background: #3b82f6; color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.1); touch-action: none; }
+        .state-card { background: #3b82f6; color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.1); touch-action: none; -webkit-user-drag: none; }
         .state-card:active { cursor: grabbing; opacity: 0.8; }
 
         .drop-card-slot { display: inline-flex; align-items: center; justify-content: center; min-width: 60px; height: 26px; border: 1.5px dashed #94a3b8; border-radius: 4px; background: #fff; font-size: 11px; font-weight: bold; color: #2563eb; padding: 0 4px; margin: 0 2px; }
@@ -491,10 +491,6 @@
     let draggedCardVal = null;
     let currentMode = 'ball-big';
 
-    // Touch support global variables
-    let touchActiveElement = null;
-    let touchClone = null;
-
     let currentConfig = {
         massKg: 0.032,
         altMassKg: 0.03,
@@ -550,37 +546,89 @@
         }
     }
 
-    // --- 통합 드래그 및 터치 이벤트 제어 ---
-    function attachDragAndTouchListeners() {
-        // 1. 실험 도구 및 저울 구슬 드래그
-        document.querySelectorAll('.draggable, .on-scale-ball').forEach(item => {
-            item.removeEventListener('dragstart', handleDragStart);
-            item.addEventListener('dragstart', handleDragStart);
+    // --- 📱 모바일/PC 포인터 이벤트(Pointer Events) 범용 터치 엔진 ---
+    let dragClone = null;
+    let activePointerId = null;
 
-            item.removeEventListener('touchstart', handleUniversalTouchStart);
-            item.removeEventListener('touchmove', handleUniversalTouchMove);
-            item.removeEventListener('touchend', handleUniversalTouchEnd);
+    function makeElementDraggable(el) {
+        el.addEventListener('pointerdown', (e) => {
+            // 마우스 우클릭 제외
+            if (e.button && e.button !== 0) return;
+            
+            activePointerId = e.pointerId;
+            draggedType = el.getAttribute('data-type');
+            draggedCardVal = el.getAttribute('data-card-val');
 
-            item.addEventListener('touchstart', handleUniversalTouchStart, { passive: false });
-            item.addEventListener('touchmove', handleUniversalTouchMove, { passive: false });
-            item.addEventListener('touchend', handleUniversalTouchEnd, { passive: false });
+            // 복제 클론 요소 생성
+            dragClone = el.cloneNode(true);
+            dragClone.classList.add('drag-clone');
+            dragClone.style.left = e.clientX + 'px';
+            dragClone.style.top = e.clientY + 'px';
+            document.body.appendChild(dragClone);
+
+            // 포인터 캡처 설정 (스크롤 방지 및 추적)
+            if (el.setPointerCapture) {
+                try { el.setPointerCapture(e.pointerId); } catch(err){}
+            }
+
+            const onPointerMove = (moveEvt) => {
+                if (!dragClone) return;
+                dragClone.style.left = moveEvt.clientX + 'px';
+                dragClone.style.top = moveEvt.clientY + 'px';
+            };
+
+            const onPointerUp = (upEvt) => {
+                if (dragClone) {
+                    dragClone.remove();
+                    dragClone = null;
+                }
+
+                el.removeEventListener('pointermove', onPointerMove);
+                el.removeEventListener('pointerup', onPointerUp);
+                el.removeEventListener('pointercancel', onPointerUp);
+
+                if (el.releasePointerCapture) {
+                    try { el.releasePointerCapture(upEvt.pointerId); } catch(err){}
+                }
+
+                // Drop 위치 요소 감지
+                const dropTarget = document.elementFromPoint(upEvt.clientX, upEvt.clientY);
+                if (dropTarget) {
+                    // A. 실험 배치 영역 드롭
+                    const dropZoneEl = dropTarget.closest('#drop-zone');
+                    if (dropZoneEl && draggedType) {
+                        processDropEvent(draggedType);
+                    }
+
+                    // B. 카드 슬롯 드롭
+                    const slot = dropTarget.closest('.drop-card-slot');
+                    if (slot && draggedCardVal) {
+                        slot.innerText = draggedCardVal;
+                        slot.classList.add('has-card');
+                        slot.classList.remove('input-error');
+                    }
+                }
+            };
+
+            el.addEventListener('pointermove', onPointerMove);
+            el.addEventListener('pointerup', onPointerUp);
+            el.addEventListener('pointercancel', onPointerUp);
+        });
+    }
+
+    function attachUniversalDragListeners() {
+        document.querySelectorAll('.draggable, .on-scale-ball, .state-card').forEach(el => {
+            makeElementDraggable(el);
         });
 
-        // 2. 해석 카드 드래그
-        document.querySelectorAll('.state-card').forEach(card => {
-            card.removeEventListener('dragstart', handleCardDragStart);
-            card.addEventListener('dragstart', handleCardDragStart);
-
-            card.removeEventListener('touchstart', handleUniversalTouchStart);
-            card.removeEventListener('touchmove', handleUniversalTouchMove);
-            card.removeEventListener('touchend', handleUniversalTouchEnd);
-
-            card.addEventListener('touchstart', handleUniversalTouchStart, { passive: false });
-            card.addEventListener('touchmove', handleUniversalTouchMove, { passive: false });
-            card.addEventListener('touchend', handleUniversalTouchEnd, { passive: false });
+        // HTML5 표준 Dragover/Drop 대비
+        const dropZone = document.getElementById('drop-zone');
+        dropZone.addEventListener('dragover', (e) => e.preventDefault());
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (draggedType) processDropEvent(draggedType);
         });
 
-        // 3. 카드 드롭 슬롯 (HTML5 Drop)
         document.querySelectorAll('.drop-card-slot').forEach(slot => {
             slot.addEventListener('dragover', (e) => e.preventDefault());
             slot.addEventListener('drop', (e) => {
@@ -593,86 +641,16 @@
             });
         });
 
-        // 4. 입력 필드 모니터링
         document.querySelectorAll('.record-field').forEach(ip => {
             ip.addEventListener('input', checkRecordCompletion);
         });
     }
 
-    function handleDragStart(e) {
-        draggedType = e.currentTarget.getAttribute('data-type');
-    }
+    attachUniversalDragListeners();
 
-    function handleCardDragStart(e) {
-        draggedCardVal = e.currentTarget.getAttribute('data-card-val');
-    }
-
-    // 터치 지원 핸들러 (모든 모바일/태블릿 터치 구동 핵심)
-    function handleUniversalTouchStart(e) {
-        e.preventDefault();
-        touchActiveElement = e.currentTarget;
-        draggedType = touchActiveElement.getAttribute('data-type');
-        draggedCardVal = touchActiveElement.getAttribute('data-card-val');
-
-        const touch = e.touches[0];
-        touchClone = touchActiveElement.cloneNode(true);
-        touchClone.classList.add('drag-clone');
-        touchClone.style.left = touch.clientX + 'px';
-        touchClone.style.top = touch.clientY + 'px';
-        document.body.appendChild(touchClone);
-    }
-
-    function handleUniversalTouchMove(e) {
-        if (!touchClone) return;
-        e.preventDefault();
-        const touch = e.touches[0];
-        touchClone.style.left = touch.clientX + 'px';
-        touchClone.style.top = touch.clientY + 'px';
-    }
-
-    function handleUniversalTouchEnd(e) {
-        if (!touchClone) return;
-        const touch = e.changedTouches[0];
-        
-        if (touchClone) {
-            touchClone.remove();
-            touchClone = null;
-        }
-
-        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
-        if (dropTarget) {
-            // A. 배치 영역(drop-zone) 드롭 처리
-            const dropZoneEl = dropTarget.closest('#drop-zone');
-            if (dropZoneEl && draggedType) {
-                processDropEvent(draggedType);
-            }
-
-            // B. 해석 카드 슬롯 드롭 처리
-            const slot = dropTarget.closest('.drop-card-slot');
-            if (slot && draggedCardVal) {
-                slot.innerText = draggedCardVal;
-                slot.classList.add('has-card');
-                slot.classList.remove('input-error');
-            }
-        }
-        touchActiveElement = null;
-    }
-
-    attachDragAndTouchListeners();
-
-    const dropZone = document.getElementById('drop-zone');
     const guideMsg = document.getElementById('guide-msg');
     const scaleBallContainer = document.getElementById('on-scale-ball-container');
 
-    dropZone.addEventListener('dragover', (e) => e.preventDefault());
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        if (draggedType) {
-            processDropEvent(draggedType);
-        }
-    });
-
-    // 배치 및 실험 진행 공통 로직
     function processDropEvent(type) {
         if (step === 1) {
             if (type === 'scale') {
@@ -729,7 +707,6 @@
     function renderBallOnScale(mode) {
         const ballDiv = document.createElement('div');
         ballDiv.className = 'on-scale-ball';
-        ballDiv.setAttribute('draggable', 'true');
         ballDiv.setAttribute('data-type', 'ball-on-scale');
 
         if (mode === 'ball-big') {
@@ -762,10 +739,9 @@
 
         scaleBallContainer.innerHTML = '';
         scaleBallContainer.appendChild(ballDiv);
-        attachDragAndTouchListeners();
+        makeElementDraggable(ballDiv);
     }
 
-    // Canvas 실시간 애니메이션 및 그래프 연동
     function runDropAnimation(mode, v1, v2, callback) {
         const ball = document.getElementById('ball-anim');
         const sensorTop = document.getElementById('sensor-top-target');
@@ -778,25 +754,22 @@
         ball.style.display = 'block';
 
         let startTime = null;
-        const duration = 1200; // ms
-        const totalHeight = currentConfig.obM; // m
-        const maxE = 9.8 * currentConfig.massKg * totalHeight; // Joule
+        const duration = 1200; 
+        const totalHeight = currentConfig.obM; 
+        const maxE = 9.8 * currentConfig.massKg * totalHeight; 
 
         function animate(timestamp) {
             if (!startTime) startTime = timestamp;
             let progress = (timestamp - startTime) / duration;
             if (progress > 1) progress = 1;
 
-            // 위치 이동 계산 (-10px ~ 255px)
             let topPx = -10 + progress * 265;
             ball.style.top = topPx + 'px';
 
-            // 실시간 높이 및 에너지 계산
             let currentH = totalHeight * (1 - progress);
             let pe = 9.8 * currentConfig.massKg * currentH;
             let ke = maxE - pe;
 
-            // Canvas 그래프 그리기
             drawCanvasGraph(pe, ke, maxE);
 
             if (progress >= 0.35 && sensorTop.innerText.indexOf(':') === -1) {
@@ -816,7 +789,6 @@
         requestAnimationFrame(animate);
     }
 
-    // Canvas 렌더링 함수
     function drawCanvasGraph(pe, ke, totalE) {
         const canvas = document.getElementById('energyCanvas');
         const ctx = canvas.getContext('2d');
@@ -825,7 +797,6 @@
 
         ctx.clearRect(0, 0, w, h);
 
-        // 배경 가이드
         ctx.strokeStyle = '#334155';
         ctx.lineWidth = 1;
         ctx.beginPath();
@@ -839,7 +810,6 @@
         const keH = totalE > 0 ? (ke / totalE) * maxBarHeight : 0;
         const meH = maxBarHeight;
 
-        // 위치 에너지 (Ep - Blue)
         ctx.fillStyle = '#3b82f6';
         ctx.fillRect(30, 250 - peH, barWidth, peH);
         ctx.fillStyle = '#ffffff';
@@ -847,25 +817,21 @@
         ctx.textAlign = 'center';
         ctx.fillText('위치(Ep)', 47, 265);
 
-        // 운동 에너지 (Ek - Red)
         ctx.fillStyle = '#ef4444';
         ctx.fillRect(82, 250 - keH, barWidth, keH);
         ctx.fillStyle = '#ffffff';
         ctx.fillText('운동(Ek)', 99, 265);
 
-        // 역학적 에너지 (Me - Green)
         ctx.fillStyle = '#22c55e';
         ctx.fillRect(134, 250 - meH, barWidth, meH);
         ctx.fillStyle = '#ffffff';
         ctx.fillText('역학적(E)', 151, 265);
 
-        // 범례 및 라벨
         ctx.fillStyle = '#94a3b8';
         ctx.font = '11px sans-serif';
         ctx.fillText('실시간 에너지 비교', w / 2, 25);
     }
 
-    // 초기 Canvas 렌더링
     drawCanvasGraph(0, 0, 1);
 
     function updateRowCalc(element) {
@@ -1043,7 +1009,7 @@
             alert("정답입니다! 완벽하게 데이터 해석 및 결론을 도출했습니다.");
             document.getElementById('btn-next-question').classList.add('active');
         } else {
-            alert("일부 오답이 있습니다. 빨간색으로 표시된 칸을 다시 확인해 주세요.");
+            alert("일부 오답이 me가 있거나 빈 칸이 있습니다. 빨간색 칸을 확인해 주세요.");
         }
     }
 
@@ -1121,7 +1087,7 @@
         document.getElementById('btn-next-question').classList.remove('active');
         setFocusBox('drop-zone');
         drawCanvasGraph(0, 0, 1);
-        attachDragAndTouchListeners();
+        attachUniversalDragListeners();
     }
 </script>
 
