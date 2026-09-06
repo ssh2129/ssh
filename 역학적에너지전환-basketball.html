@@ -33,17 +33,17 @@
     .stage-container { display: flex; width: 100%; gap: 12px; align-items: stretch; justify-content: center; }
     
     .canvas-wrapper {
-      position: relative; width: 260px; height: 460px; background: #ffffff; border: 1px solid #cbd5e1;
+      position: relative; width: 270px; height: 460px; background: #ffffff; border: 1px solid #cbd5e1;
       border-radius: 12px; display: flex; align-items: center; justify-content: flex-start;
       overflow: hidden; padding: 5px;
     }
     canvas { background: transparent; display: block; flex-shrink: 0; }
 
-    /* 커스텀 UI */
+    /* 커스텀 퀴즈 영역 */
     .canvas-right-quiz {
-      position: absolute; right: 10px; top: 10px; bottom: 10px;
-      width: 160px; background: #ecfdf5; border: 2px solid #a7f3d0; border-radius: 16px;
-      padding: 12px 8px; text-align: center; z-index: 10;
+      position: absolute; right: 8px; top: 10px; bottom: 10px;
+      width: 175px; background: #ecfdf5; border: 2px solid #a7f3d0; border-radius: 16px;
+      padding: 12px 6px; text-align: center; z-index: 10;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: space-between;
       animation: fadeIn 0.5s ease-in-out;
     }
@@ -56,14 +56,22 @@
     }
 
     .quiz-title-text {
-      font-size: 13px; font-weight: 800; color: #047857; line-height: 1.3; margin-bottom: 4px;
+      font-size: 12px; font-weight: 800; color: #047857; line-height: 1.3; margin-bottom: 4px;
     }
     .canvas-right-quiz.down-style .quiz-title-text { color: #be123c; }
 
-    /* 5cm 이상 길어진 화살표 레이아웃 */
+    /* 드래그 박스 + 조사 행 레이아웃 */
+    .transform-row {
+      display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; z-index: 2;
+    }
+    .particle-label {
+      font-size: 12px; font-weight: bold; color: #047857; white-space: nowrap;
+    }
+    .canvas-right-quiz.down-style .particle-label { color: #be123c; }
+
     .arrow-container-long {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      flex: 1; height: 260px; width: 100%; position: relative; margin: 8px 0;
+      flex: 1; height: 250px; width: 100%; position: relative; margin: 6px 0;
     }
     .arrow-stem { width: 6px; background-color: #059669; height: 100%; border-radius: 3px; }
     .arrow-head-top {
@@ -79,9 +87,9 @@
     .canvas-right-quiz.down-style .arrow-stem { background-color: #e11d48; }
 
     .transform-box {
-      display: flex; width: 135px; height: 42px; border: 2px dashed #059669; border-radius: 10px;
-      background: #ffffff; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: bold; color: #047857; transition: all 0.3s; z-index: 2;
+      width: 95px; height: 40px; border: 2px dashed #059669; border-radius: 8px;
+      background: #ffffff; display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: bold; color: #047857; transition: all 0.3s;
       box-shadow: 0 2px 5px rgba(0,0,0,0.04); flex-shrink: 0; cursor: pointer; text-align: center;
     }
     .transform-box.filled { border-style: solid; background-color: #d1fae5; border-color: #059669; color: #065f46; }
@@ -138,31 +146,33 @@
 
 <div class="app-card">
   <h1>🏀 공의 상승과 낙하 (역학적 에너지 시각적 분석)</h1>
-  <p class="subtitle">높이/속력을 맞춘 후, 오른쪽 퀴즈 영역으로 에너지를 드래그해 보세요!</p>
+  <p class="subtitle">높이/속력을 맞춘 후, 나타나는 오른쪽 영역으로 에너지를 드래그해 보세요!</p>
 
   <div id="msg-box">👉 먼저 하단의 [🏀 공 위로 던지기] 버튼을 눌러 출발 준비를 하세요!</div>
 
   <div class="workspace">
-    <!-- 상승 패널 -->
     <div class="section-panel" id="upPanel">
       <div class="panel-title bg-up">▲ 올라갈 때 (상승)</div>
       <div class="stage-container">
         <div class="canvas-wrapper">
-          <canvas id="upCanvas" width="75" height="450"></canvas>
-          <!-- 최고점 완료 후 나타나는 퀴즈 영역 -->
+          <canvas id="upCanvas" width="70" height="450"></canvas>
           <div class="canvas-right-quiz hidden" id="upTransformQuiz">
-            <div class="quiz-title-text">⚡ &lt;역학적 에너지<br>전환 설명하기&gt;</div>
+            <div class="quiz-title-text">&lt;역학적 에너지<br>전환 설명하기&gt;</div>
             
-            <!-- [도착점] 위쪽 상자 -->
-            <div class="transform-box" data-step="up-trans" data-slot="to" data-ans="위치 에너지">드래그 로 전환</div>
+            <div class="transform-row">
+              <div class="transform-box" data-step="up-trans" data-slot="to" data-ans="위치 에너지">드래그</div>
+              <span class="particle-label">로 전환</span>
+            </div>
             
             <div class="arrow-container-long">
               <div class="arrow-head-top"></div>
               <div class="arrow-stem"></div>
             </div>
             
-            <!-- [출발점] 아래쪽 상자 -->
-            <div class="transform-box" data-step="up-trans" data-slot="from" data-ans="운동 에너지">드래그 가</div>
+            <div class="transform-row">
+              <div class="transform-box" data-step="up-trans" data-slot="from" data-ans="운동 에너지">드래그</div>
+              <span class="particle-label">가</span>
+            </div>
           </div>
         </div>
 
@@ -198,26 +208,28 @@
       </div>
     </div>
 
-    <!-- 낙하 패널 -->
     <div class="section-panel hidden" id="downPanel">
       <div class="panel-title bg-down">▼ 내려올 때 (낙하)</div>
       <div class="stage-container">
         <div class="canvas-wrapper">
-          <canvas id="downCanvas" width="75" height="450"></canvas>
-          <!-- 바닥 도달 완료 후 나타나는 퀴즈 영역 -->
+          <canvas id="downCanvas" width="70" height="450"></canvas>
           <div class="canvas-right-quiz down-style hidden" id="downTransformQuiz">
-            <div class="quiz-title-text">⚡ &lt;역학적 에너지<br>전환 설명하기&gt;</div>
+            <div class="quiz-title-text">&lt;역학적 에너지<br>전환 설명하기&gt;</div>
             
-            <!-- [출발점] 위쪽 상자 -->
-            <div class="transform-box" data-step="down-trans" data-slot="from" data-ans="위치 에너지">드래그 가</div>
+            <div class="transform-row">
+              <div class="transform-box" data-step="down-trans" data-slot="from" data-ans="위치 에너지">드래그</div>
+              <span class="particle-label">가</span>
+            </div>
             
             <div class="arrow-container-long">
               <div class="arrow-stem"></div>
               <div class="arrow-head-bottom"></div>
             </div>
             
-            <!-- [도착점] 아래쪽 상자 -->
-            <div class="transform-box" data-step="down-trans" data-slot="to" data-ans="운동 에너지">드래그 로 전환</div>
+            <div class="transform-row">
+              <div class="transform-box" data-step="down-trans" data-slot="to" data-ans="운동 에너지">드래그</div>
+              <span class="particle-label">로 전환</span>
+            </div>
           </div>
         </div>
 
@@ -284,7 +296,7 @@
   const targetYMapDown = { 'DOWN_0': 40, 'DOWN_1': 220, 'DOWN_2': 400 };
 
   function drawStage(ctx, ballY, isUp) {
-    ctx.clearRect(0, 0, 75, 450);
+    ctx.clearRect(0, 0, 70, 450);
     ctx.strokeStyle = isUp ? '#93c5fd' : '#fca5a5';
     ctx.lineWidth = 4;
     ctx.setLineDash([6, 6]);
@@ -539,14 +551,7 @@
         return;
       }
 
-      // 텍스트 뒤에 조사 유지
-      const slot = box.getAttribute('data-slot');
-      if (step === 'up-trans') {
-        box.textContent = slot === 'from' ? `${draggedVal} 가` : `${draggedVal} 로 전환`;
-      } else {
-        box.textContent = slot === 'from' ? `${draggedVal} 가` : `${draggedVal} 로 전환`;
-      }
-
+      box.textContent = draggedVal;
       box.setAttribute('data-user-val', draggedVal);
       box.classList.add('filled');
 
@@ -587,7 +592,7 @@
         animateBallTo(targetYMapUp['UP_2'], true);
 
       } else if (currentPhase === 'UP_2') {
-        // 최고점 문제 완료 시 역학적 에너지 전환 퀴즈 등장!
+        // ③ 최고점 완료 직후 역학적 에너지 전환 퀴즈 등장!
         currentPhase = 'UP_TRANS_QUIZ';
         updateStepUI();
         document.getElementById('upTransformQuiz').classList.remove('hidden');
@@ -606,7 +611,7 @@
         animateBallTo(targetYMapDown['DOWN_2'], false);
 
       } else if (currentPhase === 'DOWN_2') {
-        // 바닥 도달 문제 완료 시 역학적 에너지 전환 퀴즈 등장!
+        // ③ 바닥 도달 완료 직후 역학적 에너지 전환 퀴즈 등장!
         currentPhase = 'DOWN_TRANS_QUIZ';
         updateStepUI();
         document.getElementById('downTransformQuiz').classList.remove('hidden');
@@ -674,13 +679,8 @@
       box.classList.remove('filled', 'auto-filled', 'active-target');
     });
 
-    // 드래그 상자 초기화
-    document.querySelector('.transform-box[data-step="up-trans"][data-slot="from"]').textContent = "드래그 가";
-    document.querySelector('.transform-box[data-step="up-trans"][data-slot="to"]').textContent = "드래그 로 전환";
-    document.querySelector('.transform-box[data-step="down-trans"][data-slot="from"]').textContent = "드래그 가";
-    document.querySelector('.transform-box[data-step="down-trans"][data-slot="to"]').textContent = "드래그 로 전환";
-
     document.querySelectorAll('.transform-box').forEach(box => {
+      box.textContent = "드래그";
       box.removeAttribute('data-user-val');
       box.classList.remove('filled');
     });
