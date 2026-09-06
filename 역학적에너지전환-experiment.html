@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>역학적 에너지 전환 실험 (Mechanical Energy Conversion Experiment)</title>
+    <title>역학적 에너지 전환 실험 (Touch Supported & Canvas Graph)</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; touch-action: manipulation; }
         body { padding: 15px; background-color: #f4f6f9; user-select: none; -webkit-user-select: none; }
@@ -12,12 +12,16 @@
         .header h1 { font-size: 20px; }
         
         .main-container { display: flex; flex-direction: column; gap: 15px; }
-        .top-row { display: grid; grid-template-columns: 210px 1fr; gap: 15px; height: 420px; }
+        .top-row { display: grid; grid-template-columns: 210px 1fr 220px; gap: 15px; min-height: 420px; }
         
+        @media (max-width: 900px) {
+            .top-row { grid-template-columns: 1fr; height: auto; }
+        }
+
         .box { background: white; border: 2px solid #cbd5e1; border-radius: 8px; padding: 12px; position: relative; display: flex; flex-direction: column; width: 100%; transition: border-color 0.3s, box-shadow 0.3s; }
         .box-title { font-weight: bold; background: #e2e8f0; padding: 6px; text-align: center; margin: -12px -12px 10px -12px; border-radius: 6px 6px 0 0; }
 
-        /* 단계별 활성화 박스 깜빡임(Pulse) 애니메이션 */
+        /* pulse animations */
         @keyframes pulse-placement {
             0% { border-color: #0284c7; box-shadow: 0 0 4px rgba(2, 132, 199, 0.4); }
             50% { border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.9); }
@@ -46,7 +50,7 @@
 
         /* Box 1: 실험 기구 */
         .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .draggable { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 4px; text-align: center; cursor: grab; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .draggable { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 4px; text-align: center; cursor: grab; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); touch-action: none; }
         .draggable:active { cursor: grabbing; opacity: 0.6; }
         .draggable svg { width: 42px; height: 42px; margin-bottom: 4px; pointer-events: none; }
         .draggable span { font-size: 11px; font-weight: bold; color: #334155; line-height: 1.2; word-break: keep-all; pointer-events: none; }
@@ -60,7 +64,7 @@
         .scale-plate { width: 100px; height: 10px; background: #94a3b8; border-radius: 3px; position: absolute; top: -10px; display: flex; justify-content: center; align-items: flex-end; }
         .scale-display { background: #1e293b; color: #22c55e; font-family: monospace; font-size: 16px; padding: 2px 8px; border-radius: 4px; margin-top: 10px; border: 1px solid #475569; }
         
-        .on-scale-ball { position: absolute; top: -26px; cursor: grab; z-index: 5; }
+        .on-scale-ball { position: absolute; top: -26px; cursor: grab; z-index: 5; touch-action: none; }
 
         /* 전환 장치 영역 */
         .apparatus { width: 30px; height: 280px; background: #cbd5e1; border: 2px solid #64748b; position: relative; border-radius: 4px; display: flex; justify-content: center; }
@@ -83,9 +87,13 @@
         .sensor-top { top: 90px; }
         .sensor-bottom { top: 200px; }
         
-        .ball-drop { background: radial-gradient(circle at 30% 30%, #ffffff, #64748b, #0f172a); border-radius: 50%; position: absolute; transition: top 0.4s linear; display: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        .ball-drop { background: radial-gradient(circle at 30% 30%, #ffffff, #64748b, #0f172a); border-radius: 50%; position: absolute; display: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
         .ball-big-style { width: 22px; height: 22px; left: 2px; }
         .ball-golf-style { width: 20px; height: 20px; left: 3px; background: radial-gradient(circle at 30% 30%, #ffffff, #e2e8f0, #94a3b8); border: 1px solid #cbd5e1; }
+
+        /* Canvas 실시간 그래프 Box */
+        .canvas-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
+        #energyCanvas { background: #0f172a; border-radius: 6px; border: 1px solid #334155; width: 100%; height: 300px; }
 
         /* 테이블 및 입력 스타일 */
         table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 5px; }
@@ -100,7 +108,6 @@
         .calc-table .direct-input { width: 48px; padding: 4px 1px; text-align: center; font-size: 12px; }
         .calc-table input.result-field { width: 62px; background-color: #f8fafc; font-weight: bold; color: #1e293b; border: 1px solid #94a3b8; text-align: center; font-size: 12px; padding: 4px 1px; }
 
-        /* 데이터 해석 입력 칸 너비 확대 */
         .interpret-table .direct-input { width: 70px; padding: 4px 2px; text-align: center; font-size: 12px; }
         .interpret-table input.result-field { width: 75px; background-color: #f8fafc; font-weight: bold; color: #1e293b; border: 1px solid #94a3b8; text-align: center; font-size: 12px; padding: 4px 2px; }
         
@@ -205,7 +212,7 @@
             </div>
         </div>
 
-        <!-- 2. 배치 영역 박스 (기본 깜빡임 설정) -->
+        <!-- 2. 배치 영역 박스 -->
         <div class="box active-step-placement" id="drop-zone">
             <div class="box-title">실험 기구 배치</div>
             <div class="instruction" id="guide-msg">1단계: 전자저울과 역학적 에너지 전환 장치를 드래그하여 배치하세요.</div>
@@ -236,9 +243,17 @@
                 </div>
             </div>
         </div>
+
+        <!-- 3. Canvas 기반 실시간 에너지 그래프 박스 -->
+        <div class="box">
+            <div class="box-title">실시간 에너지 변화 (Canvas)</div>
+            <div class="canvas-container">
+                <canvas id="energyCanvas" width="200" height="300"></canvas>
+            </div>
+        </div>
     </div>
 
-    <!-- 3. 데이터 기록 박스 -->
+    <!-- 4. 데이터 기록 박스 -->
     <div class="box" id="box-record">
         <div class="box-title">데이터 기록</div>
         <table class="record-table">
@@ -265,7 +280,7 @@
         </table>
     </div>
 
-    <!-- 4. 데이터 처리 박스 -->
+    <!-- 5. 데이터 처리 박스 -->
     <div class="box" id="box-calc">
         <div class="box-title">데이터 처리</div>
         <table class="calc-table" id="calc-table-el">
@@ -374,7 +389,7 @@
         </table>
     </div>
 
-    <!-- 5. 데이터 해석 박스 -->
+    <!-- 6. 데이터 해석 박스 -->
     <div class="box" id="box-interpret">
         <div class="box-title">데이터 해석</div>
         <table class="interpret-table" id="interpret-table-el">
@@ -475,7 +490,9 @@
     let draggedType = null;
     let draggedCardVal = null;
     let currentMode = 'ball-big';
-    let touchActiveCard = null;
+
+    // Touch support global variables
+    let touchActiveElement = null;
     let touchClone = null;
 
     let currentConfig = {
@@ -488,13 +505,11 @@
         v2: 3.96
     };
 
-    // 소수점 넷째자리 반올림 (넷째자리에서 반올림하여 셋째자리까지 표시)
     function roundToThree(val) {
         if (isNaN(val)) return '';
         return Math.round((val + Number.EPSILON) * 1000) / 1000;
     }
 
-    // 단계별 깜빡임 전환 관리 함수
     function setFocusBox(boxId) {
         document.querySelectorAll('.box').forEach(b => {
             b.classList.remove('active-step-placement', 'active-step-record', 'active-step-calc', 'active-step-interpret');
@@ -535,22 +550,37 @@
         }
     }
 
-    function attachDragListeners() {
-        document.querySelectorAll('.draggable').forEach(item => {
+    // --- 통합 드래그 및 터치 이벤트 제어 ---
+    function attachDragAndTouchListeners() {
+        // 1. 실험 도구 및 저울 구슬 드래그
+        document.querySelectorAll('.draggable, .on-scale-ball').forEach(item => {
             item.removeEventListener('dragstart', handleDragStart);
             item.addEventListener('dragstart', handleDragStart);
+
+            item.removeEventListener('touchstart', handleUniversalTouchStart);
+            item.removeEventListener('touchmove', handleUniversalTouchMove);
+            item.removeEventListener('touchend', handleUniversalTouchEnd);
+
+            item.addEventListener('touchstart', handleUniversalTouchStart, { passive: false });
+            item.addEventListener('touchmove', handleUniversalTouchMove, { passive: false });
+            item.addEventListener('touchend', handleUniversalTouchEnd, { passive: false });
         });
 
+        // 2. 해석 카드 드래그
         document.querySelectorAll('.state-card').forEach(card => {
-            card.addEventListener('dragstart', (e) => {
-                draggedCardVal = e.currentTarget.getAttribute('data-card-val');
-            });
+            card.removeEventListener('dragstart', handleCardDragStart);
+            card.addEventListener('dragstart', handleCardDragStart);
 
-            card.addEventListener('touchstart', handleTouchStart, { passive: false });
-            card.addEventListener('touchmove', handleTouchMove, { passive: false });
-            card.addEventListener('touchend', handleTouchEnd, { passive: false });
+            card.removeEventListener('touchstart', handleUniversalTouchStart);
+            card.removeEventListener('touchmove', handleUniversalTouchMove);
+            card.removeEventListener('touchend', handleUniversalTouchEnd);
+
+            card.addEventListener('touchstart', handleUniversalTouchStart, { passive: false });
+            card.addEventListener('touchmove', handleUniversalTouchMove, { passive: false });
+            card.addEventListener('touchend', handleUniversalTouchEnd, { passive: false });
         });
 
+        // 3. 카드 드롭 슬롯 (HTML5 Drop)
         document.querySelectorAll('.drop-card-slot').forEach(slot => {
             slot.addEventListener('dragover', (e) => e.preventDefault());
             slot.addEventListener('drop', (e) => {
@@ -563,6 +593,7 @@
             });
         });
 
+        // 4. 입력 필드 모니터링
         document.querySelectorAll('.record-field').forEach(ip => {
             ip.addEventListener('input', checkRecordCompletion);
         });
@@ -572,20 +603,26 @@
         draggedType = e.currentTarget.getAttribute('data-type');
     }
 
-    function handleTouchStart(e) {
+    function handleCardDragStart(e) {
+        draggedCardVal = e.currentTarget.getAttribute('data-card-val');
+    }
+
+    // 터치 지원 핸들러 (모든 모바일/태블릿 터치 구동 핵심)
+    function handleUniversalTouchStart(e) {
         e.preventDefault();
-        touchActiveCard = e.currentTarget;
-        draggedCardVal = touchActiveCard.getAttribute('data-card-val');
+        touchActiveElement = e.currentTarget;
+        draggedType = touchActiveElement.getAttribute('data-type');
+        draggedCardVal = touchActiveElement.getAttribute('data-card-val');
 
         const touch = e.touches[0];
-        touchClone = touchActiveCard.cloneNode(true);
+        touchClone = touchActiveElement.cloneNode(true);
         touchClone.classList.add('drag-clone');
         touchClone.style.left = touch.clientX + 'px';
         touchClone.style.top = touch.clientY + 'px';
         document.body.appendChild(touchClone);
     }
 
-    function handleTouchMove(e) {
+    function handleUniversalTouchMove(e) {
         if (!touchClone) return;
         e.preventDefault();
         const touch = e.touches[0];
@@ -593,7 +630,7 @@
         touchClone.style.top = touch.clientY + 'px';
     }
 
-    function handleTouchEnd(e) {
+    function handleUniversalTouchEnd(e) {
         if (!touchClone) return;
         const touch = e.changedTouches[0];
         
@@ -604,6 +641,13 @@
 
         const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
         if (dropTarget) {
+            // A. 배치 영역(drop-zone) 드롭 처리
+            const dropZoneEl = dropTarget.closest('#drop-zone');
+            if (dropZoneEl && draggedType) {
+                processDropEvent(draggedType);
+            }
+
+            // B. 해석 카드 슬롯 드롭 처리
             const slot = dropTarget.closest('.drop-card-slot');
             if (slot && draggedCardVal) {
                 slot.innerText = draggedCardVal;
@@ -611,24 +655,29 @@
                 slot.classList.remove('input-error');
             }
         }
-        touchActiveCard = null;
+        touchActiveElement = null;
     }
 
-    attachDragListeners();
+    attachDragAndTouchListeners();
 
     const dropZone = document.getElementById('drop-zone');
     const guideMsg = document.getElementById('guide-msg');
     const scaleBallContainer = document.getElementById('on-scale-ball-container');
 
     dropZone.addEventListener('dragover', (e) => e.preventDefault());
-
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
+        if (draggedType) {
+            processDropEvent(draggedType);
+        }
+    });
 
+    // 배치 및 실험 진행 공통 로직
+    function processDropEvent(type) {
         if (step === 1) {
-            if (draggedType === 'scale') {
+            if (type === 'scale') {
                 document.getElementById('scale-target').style.display = 'flex';
-            } else if (draggedType === 'apparatus') {
+            } else if (type === 'apparatus') {
                 document.getElementById('apparatus-target').style.display = 'flex';
             }
             if (document.getElementById('scale-target').style.display === 'flex' && 
@@ -637,11 +686,11 @@
                 guideMsg.innerText = "2단계: 속력측정기 2개를 순서대로 설치하세요.";
             }
         } else if (step === 2) {
-            if (draggedType === 'sensor1') {
+            if (type === 'sensor1') {
                 const sTop = document.getElementById('sensor-top-target');
                 sTop.innerText = "속력측정기(상)"; 
                 sTop.style.display = 'flex';
-            } else if (draggedType === 'sensor2') {
+            } else if (type === 'sensor2') {
                 const sBot = document.getElementById('sensor-bottom-target');
                 sBot.innerText = "속력측정기(하)"; 
                 sBot.style.display = 'flex';
@@ -658,7 +707,7 @@
                 document.getElementById('dist-overlay').style.display = 'block';
             }
         } else if (step === 3) {
-            if (draggedType === 'ball-target') {
+            if (type === 'ball-target') {
                 renderBallOnScale(currentMode);
                 document.getElementById('scale-weight').innerText = currentConfig.massG;
                 document.getElementById('src-ball').style.visibility = 'hidden';
@@ -667,15 +716,15 @@
                 guideMsg.innerText = `4단계: 저울 위의 ${name}을(를) 드래그하여 역학적 에너지 전환 장치 상단에 떨어뜨리세요.`;
             }
         } else if (step === 4) {
-            if (draggedType === 'ball-on-scale') {
+            if (type === 'ball-on-scale') {
                 scaleBallContainer.innerHTML = '';
                 runDropAnimation(currentMode, currentConfig.v1, currentConfig.v2, () => {
                     guideMsg.innerText = "실험이 완료되었습니다. 아래 데이터 기록, 처리, 해석 표를 입력하세요.";
-                    setFocusBox('box-record'); // 배치 완료 시 기록 박스 깜빡임 시작
+                    setFocusBox('box-record');
                 });
             }
         }
-    });
+    }
 
     function renderBallOnScale(mode) {
         const ballDiv = document.createElement('div');
@@ -711,14 +760,12 @@
             `;
         }
 
-        ballDiv.addEventListener('dragstart', (e) => {
-            draggedType = e.currentTarget.getAttribute('data-type');
-        });
-
         scaleBallContainer.innerHTML = '';
         scaleBallContainer.appendChild(ballDiv);
+        attachDragAndTouchListeners();
     }
 
+    // Canvas 실시간 애니메이션 및 그래프 연동
     function runDropAnimation(mode, v1, v2, callback) {
         const ball = document.getElementById('ball-anim');
         const sensorTop = document.getElementById('sensor-top-target');
@@ -729,31 +776,102 @@
 
         ball.className = 'ball-drop ' + (mode === 'ball-big' ? 'ball-big-style' : 'ball-golf-style');
         ball.style.display = 'block';
-        ball.style.top = '-10px';
 
-        setTimeout(() => { ball.style.top = '90px'; }, 50);
+        let startTime = null;
+        const duration = 1200; // ms
+        const totalHeight = currentConfig.obM; // m
+        const maxE = 9.8 * currentConfig.massKg * totalHeight; // Joule
 
-        setTimeout(() => {
-            sensorTop.innerText = `속력측정기(상): ${v1}m/s`;
-            ball.style.top = '200px';
-        }, 450);
+        function animate(timestamp) {
+            if (!startTime) startTime = timestamp;
+            let progress = (timestamp - startTime) / duration;
+            if (progress > 1) progress = 1;
 
-        setTimeout(() => {
-            sensorBottom.innerText = `속력측정기(하): ${v2}m/s`;
-            ball.style.top = '255px';
-        }, 850);
+            // 위치 이동 계산 (-10px ~ 255px)
+            let topPx = -10 + progress * 265;
+            ball.style.top = topPx + 'px';
 
-        setTimeout(() => {
-            if(callback) callback();
-        }, 1200);
+            // 실시간 높이 및 에너지 계산
+            let currentH = totalHeight * (1 - progress);
+            let pe = 9.8 * currentConfig.massKg * currentH;
+            let ke = maxE - pe;
+
+            // Canvas 그래프 그리기
+            drawCanvasGraph(pe, ke, maxE);
+
+            if (progress >= 0.35 && sensorTop.innerText.indexOf(':') === -1) {
+                sensorTop.innerText = `속력측정기(상): ${v1}m/s`;
+            }
+            if (progress >= 0.8 && sensorBottom.innerText.indexOf(':') === -1) {
+                sensorBottom.innerText = `속력측정기(하): ${v2}m/s`;
+            }
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                if (callback) callback();
+            }
+        }
+
+        requestAnimationFrame(animate);
     }
 
-    // 소수점 넷째 자리 반올림 연동 로직
+    // Canvas 렌더링 함수
+    function drawCanvasGraph(pe, ke, totalE) {
+        const canvas = document.getElementById('energyCanvas');
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // 배경 가이드
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(20, 250); ctx.lineTo(180, 250);
+        ctx.stroke();
+
+        const barWidth = 35;
+        const maxBarHeight = 180;
+
+        const peH = totalE > 0 ? (pe / totalE) * maxBarHeight : 0;
+        const keH = totalE > 0 ? (ke / totalE) * maxBarHeight : 0;
+        const meH = maxBarHeight;
+
+        // 위치 에너지 (Ep - Blue)
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(30, 250 - peH, barWidth, peH);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('위치(Ep)', 47, 265);
+
+        // 운동 에너지 (Ek - Red)
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(82, 250 - keH, barWidth, keH);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('운동(Ek)', 99, 265);
+
+        // 역학적 에너지 (Me - Green)
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(134, 250 - meH, barWidth, meH);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('역학적(E)', 151, 265);
+
+        // 범례 및 라벨
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '11px sans-serif';
+        ctx.fillText('실시간 에너지 비교', w / 2, 25);
+    }
+
+    // 초기 Canvas 렌더링
+    drawCanvasGraph(0, 0, 1);
+
     function updateRowCalc(element) {
         element.classList.remove('input-error');
         const row = element.closest('tr');
         
-        // 1. 위치 에너지
         const peInputs = row.querySelectorAll('.pe-m, .pe-g, .pe-h');
         const peRes = row.querySelector('.pe-res');
         const peVal1 = parseFloat(peInputs[0].value);
@@ -775,7 +893,6 @@
         row.querySelector('.me-g').value = peInputs[1].value;
         row.querySelector('.me-h').value = peInputs[2].value;
 
-        // 2. 운동 에너지
         const keInputs = row.querySelectorAll('.ke-m, .ke-v');
         const keRes = row.querySelector('.ke-res');
         const keVal1 = parseFloat(keInputs[0].value);
@@ -795,7 +912,6 @@
         row.querySelector('.me-m2').value = keInputs[0].value;
         row.querySelector('.me-v').value = keInputs[1].value;
 
-        // 3. 역학적 에너지
         const meRes = row.querySelector('.me-res');
         if (isPeValid && isKeValid) {
             meRes.value = roundToThree(peTotal + keTotal);
@@ -860,14 +976,12 @@
 
         const mKgCandidates = currentConfig.altMassKg ? [currentConfig.massKg, currentConfig.altMassKg] : [currentConfig.massKg];
 
-        // 1. 데이터 기록 검증
         checkFieldMulti(document.getElementById('m1'), mKgCandidates);
         checkFieldMulti(document.getElementById('h1_1'), [currentConfig.oaM]);
         checkFieldMulti(document.getElementById('v1_1'), [currentConfig.v1]); 
         checkFieldMulti(document.getElementById('h2_1'), [currentConfig.obM]);
         checkFieldMulti(document.getElementById('v2_1'), [currentConfig.v2]);
 
-        // 2. 데이터 처리 검증
         const totalHeight = currentConfig.obM; 
         const pointTargets = {
             'O': { h: totalHeight, v: 0 },
@@ -893,7 +1007,6 @@
             checkFieldMulti(meRes, [expectedME]);
         });
 
-        // 3. 데이터 해석 & 결론 검증
         const rowOA = document.querySelector('tr[data-section="OA"]');
         const rowAB = document.querySelector('tr[data-section="AB"]');
 
@@ -926,7 +1039,7 @@
         checkSlotCard(document.querySelector('[data-slot="c_cons"]'), '일정');
 
         if (allCorrect) {
-            setFocusBox(null); // 모든 검증 완료 시 깜빡임 종료
+            setFocusBox(null);
             alert("정답입니다! 완벽하게 데이터 해석 및 결론을 도출했습니다.");
             document.getElementById('btn-next-question').classList.add('active');
         } else {
@@ -1006,8 +1119,9 @@
         });
 
         document.getElementById('btn-next-question').classList.remove('active');
-        setFocusBox('drop-zone'); // 다시 1단계 박스 깜빡임 설정
-        attachDragListeners();
+        setFocusBox('drop-zone');
+        drawCanvasGraph(0, 0, 1);
+        attachDragAndTouchListeners();
     }
 </script>
 
