@@ -39,29 +39,33 @@
     }
     canvas { background: transparent; display: block; flex-shrink: 0; }
 
-    /* 이미지 스타일 맞춤 UI */
+    /* 커스텀 UI */
     .canvas-right-quiz {
       position: absolute; right: 10px; top: 10px; bottom: 10px;
       width: 160px; background: #ecfdf5; border: 2px solid #a7f3d0; border-radius: 16px;
       padding: 12px 8px; text-align: center; z-index: 10;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      animation: fadeIn 0.5s ease-in-out;
     }
+    .canvas-right-quiz.hidden { display: none !important; }
     .canvas-right-quiz.down-style { background: #fff1f2; border-color: #fecdd3; }
 
-    .quiz-title-text {
-      font-size: 12px; font-weight: 800; color: #047857; line-height: 1.3; margin-bottom: 4px;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    .quiz-title-text span { color: #059669; font-size: 11px; font-weight: 600; }
+
+    .quiz-title-text {
+      font-size: 13px; font-weight: 800; color: #047857; line-height: 1.3; margin-bottom: 4px;
+    }
     .canvas-right-quiz.down-style .quiz-title-text { color: #be123c; }
 
-    /* 화살표 길이를 5cm 이상(약 220px 이상)으로 길게 늘린 커스텀 화살표 */
+    /* 5cm 이상 길어진 화살표 레이아웃 */
     .arrow-container-long {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       flex: 1; height: 260px; width: 100%; position: relative; margin: 8px 0;
     }
-    .arrow-stem {
-      width: 6px; background-color: #059669; height: 100%; border-radius: 3px;
-    }
+    .arrow-stem { width: 6px; background-color: #059669; height: 100%; border-radius: 3px; }
     .arrow-head-top {
       width: 0; height: 0; 
       border-left: 10px solid transparent; border-right: 10px solid transparent;
@@ -75,10 +79,10 @@
     .canvas-right-quiz.down-style .arrow-stem { background-color: #e11d48; }
 
     .transform-box {
-      display: flex; width: 125px; height: 42px; border: 2px dashed #059669; border-radius: 10px;
+      display: flex; width: 135px; height: 42px; border: 2px dashed #059669; border-radius: 10px;
       background: #ffffff; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: bold; color: #047857; transition: all 0.3s; z-index: 2;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.04); flex-shrink: 0; cursor: pointer;
+      font-size: 12px; font-weight: bold; color: #047857; transition: all 0.3s; z-index: 2;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.04); flex-shrink: 0; cursor: pointer; text-align: center;
     }
     .transform-box.filled { border-style: solid; background-color: #d1fae5; border-color: #059669; color: #065f46; }
     .canvas-right-quiz.down-style .transform-box { border-color: #e11d48; color: #be123c; }
@@ -145,20 +149,20 @@
       <div class="stage-container">
         <div class="canvas-wrapper">
           <canvas id="upCanvas" width="75" height="450"></canvas>
+          <!-- 최고점 완료 후 나타나는 퀴즈 영역 -->
           <div class="canvas-right-quiz hidden" id="upTransformQuiz">
-            <div class="quiz-title-text">⚡ 에너지 전환<br><span>(드래그)가 (드래그)로 전환</span></div>
+            <div class="quiz-title-text">⚡ &lt;역학적 에너지<br>전환 설명하기&gt;</div>
             
-            <!-- [도착점] 위쪽 정답: 위치 에너지 -->
-            <div class="transform-box" data-step="up-trans" data-slot="to" data-ans="위치 에너지">드래그</div>
+            <!-- [도착점] 위쪽 상자 -->
+            <div class="transform-box" data-step="up-trans" data-slot="to" data-ans="위치 에너지">드래그 로 전환</div>
             
-            <!-- 5cm 이상 길어진 화살표 영역 -->
             <div class="arrow-container-long">
               <div class="arrow-head-top"></div>
               <div class="arrow-stem"></div>
             </div>
             
-            <!-- [출발점] 아래쪽 정답: 운동 에너지 -->
-            <div class="transform-box" data-step="up-trans" data-slot="from" data-ans="운동 에너지">드래그</div>
+            <!-- [출발점] 아래쪽 상자 -->
+            <div class="transform-box" data-step="up-trans" data-slot="from" data-ans="운동 에너지">드래그 가</div>
           </div>
         </div>
 
@@ -200,20 +204,20 @@
       <div class="stage-container">
         <div class="canvas-wrapper">
           <canvas id="downCanvas" width="75" height="450"></canvas>
+          <!-- 바닥 도달 완료 후 나타나는 퀴즈 영역 -->
           <div class="canvas-right-quiz down-style hidden" id="downTransformQuiz">
-            <div class="quiz-title-text">⚡ 에너지 전환<br><span>(드래그)가 (드래그)로 전환</span></div>
+            <div class="quiz-title-text">⚡ &lt;역학적 에너지<br>전환 설명하기&gt;</div>
             
-            <!-- [출발점] 위쪽 정답: 위치 에너지 -->
-            <div class="transform-box" data-step="down-trans" data-slot="from" data-ans="위치 에너지">드래그</div>
+            <!-- [출발점] 위쪽 상자 -->
+            <div class="transform-box" data-step="down-trans" data-slot="from" data-ans="위치 에너지">드래그 가</div>
             
-            <!-- 5cm 이상 길어진 아래쪽 화살표 -->
             <div class="arrow-container-long">
               <div class="arrow-stem"></div>
               <div class="arrow-head-bottom"></div>
             </div>
             
-            <!-- [도착점] 아래쪽 정답: 운동 에너지 -->
-            <div class="transform-box" data-step="down-trans" data-slot="to" data-ans="운동 에너지">드래그</div>
+            <!-- [도착점] 아래쪽 상자 -->
+            <div class="transform-box" data-step="down-trans" data-slot="to" data-ans="운동 에너지">드래그 로 전환</div>
           </div>
         </div>
 
@@ -535,7 +539,14 @@
         return;
       }
 
-      box.textContent = draggedVal;
+      // 텍스트 뒤에 조사 유지
+      const slot = box.getAttribute('data-slot');
+      if (step === 'up-trans') {
+        box.textContent = slot === 'from' ? `${draggedVal} 가` : `${draggedVal} 로 전환`;
+      } else {
+        box.textContent = slot === 'from' ? `${draggedVal} 가` : `${draggedVal} 로 전환`;
+      }
+
       box.setAttribute('data-user-val', draggedVal);
       box.classList.add('filled');
 
@@ -576,10 +587,11 @@
         animateBallTo(targetYMapUp['UP_2'], true);
 
       } else if (currentPhase === 'UP_2') {
+        // 최고점 문제 완료 시 역학적 에너지 전환 퀴즈 등장!
         currentPhase = 'UP_TRANS_QUIZ';
         updateStepUI();
         document.getElementById('upTransformQuiz').classList.remove('hidden');
-        setMsg("⚡ [오른쪽 퀴즈 영역]\n공이 위로 올라갈 때 어떤 에너지가 어떤 에너지로 전환되는지 아래 상자부터 순서대로 드래그하세요!", 'info');
+        setMsg("⚡ [역학적 에너지 전환 설명하기]\n공이 위로 올라갈 때 어떤 에너지가 어떤 에너지로 전환되는지 아래 상자부터 순서대로 드래그해 완성하세요!", 'info');
 
       } else if (currentPhase === 'DOWN_0') {
         setMsg("🎉 정답입니다!\n②번 [낙하 중(중간)]의 변화를 맞추면 공이 내려옵니다.", 'success');
@@ -594,10 +606,11 @@
         animateBallTo(targetYMapDown['DOWN_2'], false);
 
       } else if (currentPhase === 'DOWN_2') {
+        // 바닥 도달 문제 완료 시 역학적 에너지 전환 퀴즈 등장!
         currentPhase = 'DOWN_TRANS_QUIZ';
         updateStepUI();
         document.getElementById('downTransformQuiz').classList.remove('hidden');
-        setMsg("⚡ [오른쪽 퀴즈 영역]\n공이 아래로 내려올 때 어떤 에너지가 어떤 에너지로 전환되는지 위 상자부터 순서대로 드래그하세요!", 'info');
+        setMsg("⚡ [역학적 에너지 전환 설명하기]\n공이 아래로 내려올 때 어떤 에너지가 어떤 에너지로 전환되는지 위 상자부터 순서대로 드래그해 완성하세요!", 'info');
       }
     }
   }
@@ -661,8 +674,13 @@
       box.classList.remove('filled', 'auto-filled', 'active-target');
     });
 
+    // 드래그 상자 초기화
+    document.querySelector('.transform-box[data-step="up-trans"][data-slot="from"]').textContent = "드래그 가";
+    document.querySelector('.transform-box[data-step="up-trans"][data-slot="to"]').textContent = "드래그 로 전환";
+    document.querySelector('.transform-box[data-step="down-trans"][data-slot="from"]').textContent = "드래그 가";
+    document.querySelector('.transform-box[data-step="down-trans"][data-slot="to"]').textContent = "드래그 로 전환";
+
     document.querySelectorAll('.transform-box').forEach(box => {
-      box.textContent = "드래그";
       box.removeAttribute('data-user-val');
       box.classList.remove('filled');
     });
