@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>중3 과학: 공의 상승과 낙하 - 역학적 에너지 시각적 분석</title>
+  <title>중3 과학: 역학적 에너지 전환 분석</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: #f4f6f9; color: #333; display: flex; flex-direction: column; align-items: center; padding: 15px; touch-action: manipulation; }
@@ -18,11 +18,11 @@
       margin-bottom: 15px; line-height: 1.4; transition: all 0.3s ease; white-space: pre-line;
     }
 
-    .workspace { display: flex; gap: 15px; justify-content: center; align-items: flex-start; min-height: 400px; flex-wrap: wrap; }
+    .workspace { display: flex; gap: 15px; justify-content: center; align-items: flex-start; min-height: 480px; flex-wrap: wrap; }
 
     .section-panel {
       flex: 1; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px;
-      display: flex; flex-direction: column; align-items: center; transition: all 0.5s ease; min-width: 320px; max-width: 600px; width: 100%;
+      display: flex; flex-direction: column; align-items: center; transition: all 0.5s ease; min-width: 340px; max-width: 600px; width: 100%;
     }
     .section-panel.hidden { display: none !important; }
 
@@ -33,47 +33,59 @@
     .stage-container { display: flex; width: 100%; gap: 12px; align-items: stretch; justify-content: center; }
     
     .canvas-wrapper {
-      position: relative; width: 250px; height: 380px; background: #ffffff; border: 1px solid #cbd5e1;
+      position: relative; width: 260px; height: 460px; background: #ffffff; border: 1px solid #cbd5e1;
       border-radius: 12px; display: flex; align-items: center; justify-content: flex-start;
       overflow: hidden; padding: 5px;
     }
     canvas { background: transparent; display: block; flex-shrink: 0; }
 
+    /* 이미지 스타일 맞춤 UI */
     .canvas-right-quiz {
-      position: absolute; right: 8px; top: 10px; bottom: 10px;
-      width: 150px; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 12px;
-      padding: 10px 6px; text-align: center; font-size: 11px; font-weight: bold; color: #047857; z-index: 10;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      position: absolute; right: 10px; top: 10px; bottom: 10px;
+      width: 160px; background: #ecfdf5; border: 2px solid #a7f3d0; border-radius: 16px;
+      padding: 12px 8px; text-align: center; z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; justify-content: space-between;
     }
-    .canvas-right-quiz.down-style { background: #fff1f2; border-color: #fecdd3; color: #be123c; }
+    .canvas-right-quiz.down-style { background: #fff1f2; border-color: #fecdd3; }
 
-    .quiz-instruction-label {
-      font-size: 11px; font-weight: 800; color: #065f46; line-height: 1.3; background: rgba(255,255,255,0.9);
-      padding: 6px 4px; border-radius: 6px; width: 100%; border: 1px solid #a7f3d0;
+    .quiz-title-text {
+      font-size: 12px; font-weight: 800; color: #047857; line-height: 1.3; margin-bottom: 4px;
     }
-    .canvas-right-quiz.down-style .quiz-instruction-label { color: #9f1239; border-color: #fecdd3; }
+    .quiz-title-text span { color: #059669; font-size: 11px; font-weight: 600; }
+    .canvas-right-quiz.down-style .quiz-title-text { color: #be123c; }
 
-    .arrow-connector {
+    /* 화살표 길이를 5cm 이상(약 220px 이상)으로 길게 늘린 커스텀 화살표 */
+    .arrow-container-long {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      flex: 1; height: 210px; width: 100%; position: relative; margin: 4px 0;
+      flex: 1; height: 260px; width: 100%; position: relative; margin: 8px 0;
     }
-    .arrow-line {
-      width: 5px; background-color: #10b981; height: 100%; border-radius: 2px;
+    .arrow-stem {
+      width: 6px; background-color: #059669; height: 100%; border-radius: 3px;
     }
-    .arrow-head-up {
+    .arrow-head-top {
       width: 0; height: 0; 
-      border-left: 9px solid transparent; border-right: 9px solid transparent;
-      border-bottom: 16px solid #10b981; margin-bottom: -1px;
+      border-left: 10px solid transparent; border-right: 10px solid transparent;
+      border-bottom: 18px solid #059669; margin-bottom: -1px;
     }
-    .arrow-head-down {
+    .arrow-head-bottom {
       width: 0; height: 0; 
-      border-left: 9px solid transparent; border-right: 9px solid transparent;
-      border-top: 16px solid #e11d48; margin-top: -1px;
+      border-left: 10px solid transparent; border-right: 10px solid transparent;
+      border-top: 18px solid #e11d48; margin-top: -1px;
     }
-    .canvas-right-quiz.down-style .arrow-line { background-color: #e11d48; }
+    .canvas-right-quiz.down-style .arrow-stem { background-color: #e11d48; }
 
-    .quiz-group { display: flex; flex-direction: column; justify-content: space-between; height: 380px; flex: 1; }
-    .quiz-row { background: #ffffff; padding: 6px 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: bold; transition: all 0.3s; }
+    .transform-box {
+      display: flex; width: 125px; height: 42px; border: 2px dashed #059669; border-radius: 10px;
+      background: #ffffff; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: bold; color: #047857; transition: all 0.3s; z-index: 2;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.04); flex-shrink: 0; cursor: pointer;
+    }
+    .transform-box.filled { border-style: solid; background-color: #d1fae5; border-color: #059669; color: #065f46; }
+    .canvas-right-quiz.down-style .transform-box { border-color: #e11d48; color: #be123c; }
+    .canvas-right-quiz.down-style .transform-box.filled { background-color: #ffe4e6; border-color: #e11d48; color: #9f1239; }
+
+    .quiz-group { display: flex; flex-direction: column; justify-content: space-between; height: 460px; flex: 1; }
+    .quiz-row { background: #ffffff; padding: 8px 8px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; font-weight: bold; transition: all 0.3s; }
     .quiz-row.disabled { opacity: 0.4; pointer-events: none; }
     .quiz-row-header { color: #475569; margin-bottom: 4px; text-align: center; }
     
@@ -81,7 +93,7 @@
     .grid-item { display: flex; align-items: center; gap: 3px; }
 
     .drop-box {
-      width: 56px; height: 28px; border: 2px dashed #cbd5e1; border-radius: 6px;
+      width: 54px; height: 28px; border: 2px dashed #cbd5e1; border-radius: 6px;
       background: #fafafa; display: flex; align-items: center; justify-content: center;
       font-size: 11px; font-weight: bold; transition: all 0.2s;
     }
@@ -89,16 +101,6 @@
     .drop-box.hover { border-color: #10b981; background-color: #d1fae5; }
     .drop-box.filled { border-style: solid; border-color: #3b82f6; background-color: #eff6ff; color: #1d4ed8; }
     .drop-box.auto-filled { border-style: solid; border-color: #8b5cf6; background-color: #f3e8ff; color: #6b21a8; }
-
-    .transform-box {
-      display: flex; width: 115px; height: 34px; border: 2px dashed #0d9488; border-radius: 8px;
-      background: #ffffff; align-items: center; justify-content: center;
-      font-size: 11px; font-weight: bold; color: #0f766e; transition: all 0.3s; z-index: 2;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.04); flex-shrink: 0;
-    }
-    .transform-box.filled { border-style: solid; background-color: #ccfbf1; border-color: #0d9488; color: #115e59; }
-    .canvas-right-quiz.down-style .transform-box { border-color: #e11d48; color: #9f1239; }
-    .canvas-right-quiz.down-style .transform-box.filled { background-color: #ffe4e6; border-color: #e11d48; color: #9f1239; }
 
     @keyframes pulse-border {
       0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
@@ -112,7 +114,7 @@
       font-weight: bold; color: #334155; cursor: grab; box-shadow: 0 2px 5px rgba(0,0,0,0.06);
       font-size: 13px; user-select: none; -webkit-user-select: none; touch-action: none;
     }
-    .drag-card.energy-card { border-color: #14b8a6; background: #f0fdf4; color: #0f766e; }
+    .drag-card.energy-card { border-color: #059669; background: #ecfdf5; color: #047857; }
 
     .controls { display: flex; justify-content: center; gap: 10px; margin-top: 15px; }
     .btn { padding: 10px 20px; font-size: 13px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
@@ -132,7 +134,7 @@
 
 <div class="app-card">
   <h1>🏀 공의 상승과 낙하 (역학적 에너지 시각적 분석)</h1>
-  <p class="subtitle">높이/속력을 맞춘 후, 농구공 오른쪽에 위치한 상자로 에너지 카드들을 드래그해 보세요!</p>
+  <p class="subtitle">높이/속력을 맞춘 후, 오른쪽 퀴즈 영역으로 에너지를 드래그해 보세요!</p>
 
   <div id="msg-box">👉 먼저 하단의 [🏀 공 위로 던지기] 버튼을 눌러 출발 준비를 하세요!</div>
 
@@ -142,20 +144,20 @@
       <div class="panel-title bg-up">▲ 올라갈 때 (상승)</div>
       <div class="stage-container">
         <div class="canvas-wrapper">
-          <canvas id="upCanvas" width="75" height="380"></canvas>
+          <canvas id="upCanvas" width="75" height="450"></canvas>
           <div class="canvas-right-quiz hidden" id="upTransformQuiz">
-            <div class="quiz-instruction-label">⚡ (드래그)가<br>(드래그)로 전환</div>
+            <div class="quiz-title-text">⚡ 에너지 전환<br><span>(드래그)가 (드래그)로 전환</span></div>
             
-            <!-- 위쪽: 도착점 (위치 에너지) -->
+            <!-- [도착점] 위쪽 정답: 위치 에너지 -->
             <div class="transform-box" data-step="up-trans" data-slot="to" data-ans="위치 에너지">드래그</div>
             
-            <!-- 5cm 이상 확장된 위쪽 화살표 -->
-            <div class="arrow-connector">
-              <div class="arrow-head-up"></div>
-              <div class="arrow-line"></div>
+            <!-- 5cm 이상 길어진 화살표 영역 -->
+            <div class="arrow-container-long">
+              <div class="arrow-head-top"></div>
+              <div class="arrow-stem"></div>
             </div>
             
-            <!-- 아래쪽: 출발점 (운동 에너지) -->
+            <!-- [출발점] 아래쪽 정답: 운동 에너지 -->
             <div class="transform-box" data-step="up-trans" data-slot="from" data-ans="운동 에너지">드래그</div>
           </div>
         </div>
@@ -197,20 +199,20 @@
       <div class="panel-title bg-down">▼ 내려올 때 (낙하)</div>
       <div class="stage-container">
         <div class="canvas-wrapper">
-          <canvas id="downCanvas" width="75" height="380"></canvas>
+          <canvas id="downCanvas" width="75" height="450"></canvas>
           <div class="canvas-right-quiz down-style hidden" id="downTransformQuiz">
-            <div class="quiz-instruction-label">⚡ (드래그)가<br>(드래그)로 전환</div>
+            <div class="quiz-title-text">⚡ 에너지 전환<br><span>(드래그)가 (드래그)로 전환</span></div>
             
-            <!-- 위쪽: 출발점 (위치 에너지) -->
+            <!-- [출발점] 위쪽 정답: 위치 에너지 -->
             <div class="transform-box" data-step="down-trans" data-slot="from" data-ans="위치 에너지">드래그</div>
             
-            <!-- 5cm 이상 확장된 아래쪽 화살표 -->
-            <div class="arrow-connector">
-              <div class="arrow-line"></div>
-              <div class="arrow-head-down"></div>
+            <!-- 5cm 이상 길어진 아래쪽 화살표 -->
+            <div class="arrow-container-long">
+              <div class="arrow-stem"></div>
+              <div class="arrow-head-bottom"></div>
             </div>
             
-            <!-- 아래쪽: 도착점 (운동 에너지) -->
+            <!-- [도착점] 아래쪽 정답: 운동 에너지 -->
             <div class="transform-box" data-step="down-trans" data-slot="to" data-ans="운동 에너지">드래그</div>
           </div>
         </div>
@@ -270,29 +272,29 @@
   const downCtx = downCanvas.getContext('2d');
 
   let currentPhase = 'INIT';
-  let upY = 340;
+  let upY = 400;
   let downY = 40;
   let isAnimating = false;
 
-  const targetYMapUp = { 'UP_0': 340, 'UP_1': 190, 'UP_2': 40 };
-  const targetYMapDown = { 'DOWN_0': 40, 'DOWN_1': 190, 'DOWN_2': 340 };
+  const targetYMapUp = { 'UP_0': 400, 'UP_1': 220, 'UP_2': 40 };
+  const targetYMapDown = { 'DOWN_0': 40, 'DOWN_1': 220, 'DOWN_2': 400 };
 
   function drawStage(ctx, ballY, isUp) {
-    ctx.clearRect(0, 0, 75, 380);
+    ctx.clearRect(0, 0, 75, 450);
     ctx.strokeStyle = isUp ? '#93c5fd' : '#fca5a5';
     ctx.lineWidth = 4;
     ctx.setLineDash([6, 6]);
     ctx.beginPath();
-    ctx.moveTo(35, 30); ctx.lineTo(35, 350);
+    ctx.moveTo(35, 30); ctx.lineTo(35, 410);
     ctx.stroke();
     ctx.setLineDash([]);
 
     ctx.fillStyle = isUp ? '#3b82f6' : '#f43f5e';
     ctx.beginPath();
     if (isUp) {
-      ctx.moveTo(35, 15); ctx.lineTo(27, 30); ctx.lineTo(43, 30);
+      ctx.moveTo(35, 12); ctx.lineTo(26, 28); ctx.lineTo(44, 28);
     } else {
-      ctx.moveTo(35, 365); ctx.lineTo(27, 350); ctx.lineTo(43, 350);
+      ctx.moveTo(35, 428); ctx.lineTo(26, 412); ctx.lineTo(44, 412);
     }
     ctx.fill();
 
@@ -334,7 +336,7 @@
     const actionBtn = document.getElementById('actionBtn');
     if (currentPhase === 'INIT') {
       currentPhase = 'UP_0';
-      upY = 340;
+      upY = 400;
       drawStage(upCtx, upY, true);
       updateStepUI();
       actionBtn.disabled = true;
@@ -577,7 +579,7 @@
         currentPhase = 'UP_TRANS_QUIZ';
         updateStepUI();
         document.getElementById('upTransformQuiz').classList.remove('hidden');
-        setMsg("⚡ [농구공 우측 퀴즈]\n공이 위로 올라갈 때는 어떤 에너지가 어떤 에너지로 전환되는지 드래그하세요!", 'info');
+        setMsg("⚡ [오른쪽 퀴즈 영역]\n공이 위로 올라갈 때 어떤 에너지가 어떤 에너지로 전환되는지 아래 상자부터 순서대로 드래그하세요!", 'info');
 
       } else if (currentPhase === 'DOWN_0') {
         setMsg("🎉 정답입니다!\n②번 [낙하 중(중간)]의 변화를 맞추면 공이 내려옵니다.", 'success');
@@ -595,7 +597,7 @@
         currentPhase = 'DOWN_TRANS_QUIZ';
         updateStepUI();
         document.getElementById('downTransformQuiz').classList.remove('hidden');
-        setMsg("⚡ [농구공 우측 퀴즈]\n공이 아래로 내려올 때는 어떤 에너지가 어떤 에너지로 전환되는지 드래그하세요!", 'info');
+        setMsg("⚡ [오른쪽 퀴즈 영역]\n공이 아래로 내려올 때 어떤 에너지가 어떤 에너지로 전환되는지 위 상자부터 순서대로 드래그하세요!", 'info');
       }
     }
   }
@@ -626,14 +628,14 @@
 
       } else if (stepKey === 'down-trans') {
         currentPhase = 'ALL_DONE';
-        setMsg("🎉 축하합니다! 공의 상승과 낙하에 따른 역학적 에너지 전환을 완벽하게 이해하셨습니다! ✨", 'success');
+        setMsg("🎉 축하합니다! 공의 상승과 낙하에 따른 역학적 에너지 전환 개념을 완벽하게 마스터했습니다! ✨", 'success');
       }
     }
   }
 
   function resetApp() {
     currentPhase = 'INIT';
-    upY = 340;
+    upY = 400;
     downY = 40;
     isAnimating = false;
 
