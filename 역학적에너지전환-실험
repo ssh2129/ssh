@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>역학적 에너지 전환 실험 (Mechanical Energy Conversion Experiment)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; touch-action: manipulation; }
+        body { padding: 15px; background-color: #f4f6f9; user-select: none; -webkit-user-select: none; }
+        
+        .header { background: #2c3e50; color: white; padding: 12px; text-align: center; border-radius: 8px; margin-bottom: 15px; }
+        .header h1 { font-size: 20px; }
+        
+        .main-container { display: flex; flex-direction: column; gap: 15px; }
+        .top-row { display: grid; grid-template-columns: 210px 1fr; gap: 15px; height: 420px; }
+        
+        .box { background: white; border: 2px solid #cbd5e1; border-radius: 8px; padding: 12px; position: relative; display: flex; flex-direction: column; width: 100%; transition: border-color 0.3s, box-shadow 0.3s; }
+        .box-title { font-weight: bold; background: #e2e8f0; padding: 6px; text-align: center; margin: -12px -12px 10px -12px; border-radius: 6px 6px 0 0; }
+
+        /* 단계별 활성화 박스 깜빡임(Pulse) 애니메이션 */
+        @keyframes pulse-placement {
+            0% { border-color: #0284c7; box-shadow: 0 0 4px rgba(2, 132, 199, 0.4); }
+            50% { border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.9); }
+            100% { border-color: #0284c7; box-shadow: 0 0 4px rgba(2, 132, 199, 0.4); }
+        }
+        @keyframes pulse-record {
+            0% { border-color: #ea580c; box-shadow: 0 0 4px rgba(234, 88, 12, 0.4); }
+            50% { border-color: #fb923c; box-shadow: 0 0 15px rgba(251, 146, 60, 0.9); }
+            100% { border-color: #ea580c; box-shadow: 0 0 4px rgba(234, 88, 12, 0.4); }
+        }
+        @keyframes pulse-calc {
+            0% { border-color: #7c3aed; box-shadow: 0 0 4px rgba(124, 58, 237, 0.4); }
+            50% { border-color: #a78bfa; box-shadow: 0 0 15px rgba(167, 139, 250, 0.9); }
+            100% { border-color: #7c3aed; box-shadow: 0 0 4px rgba(124, 58, 237, 0.4); }
+        }
+        @keyframes pulse-interpret {
+            0% { border-color: #16a34a; box-shadow: 0 0 4px rgba(22, 163, 74, 0.4); }
+            50% { border-color: #4ade80; box-shadow: 0 0 15px rgba(74, 222, 128, 0.9); }
+            100% { border-color: #16a34a; box-shadow: 0 0 4px rgba(22, 163, 74, 0.4); }
+        }
+
+        .active-step-placement { animation: pulse-placement 1.2s infinite !important; border-width: 3px !important; }
+        .active-step-record { animation: pulse-record 1.2s infinite !important; border-width: 3px !important; }
+        .active-step-calc { animation: pulse-calc 1.2s infinite !important; border-width: 3px !important; }
+        .active-step-interpret { animation: pulse-interpret 1.2s infinite !important; border-width: 3px !important; }
+
+        /* Box 1: 실험 기구 */
+        .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .draggable { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 4px; text-align: center; cursor: grab; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .draggable:active { cursor: grabbing; opacity: 0.6; }
+        .draggable svg { width: 42px; height: 42px; margin-bottom: 4px; pointer-events: none; }
+        .draggable span { font-size: 11px; font-weight: bold; color: #334155; line-height: 1.2; word-break: keep-all; pointer-events: none; }
+
+        /* Box 2: 배치 영역 */
+        #drop-zone { background: #f8fafc; border: 2px dashed #94a3b8; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow: hidden; }
+        .instruction { background: #e0f2fe; color: #0369a1; padding: 8px; border-radius: 6px; font-size: 13px; margin-bottom: 10px; width: 100%; text-align: center; font-weight: bold; }
+        .workspace { display: flex; justify-content: space-around; width: 100%; height: 330px; position: relative; align-items: flex-end; padding-bottom: 10px; }
+        
+        .scale-area { width: 130px; height: 90px; border: 2px solid #64748b; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f1f5f9; position: relative; }
+        .scale-plate { width: 100px; height: 10px; background: #94a3b8; border-radius: 3px; position: absolute; top: -10px; display: flex; justify-content: center; align-items: flex-end; }
+        .scale-display { background: #1e293b; color: #22c55e; font-family: monospace; font-size: 16px; padding: 2px 8px; border-radius: 4px; margin-top: 10px; border: 1px solid #475569; }
+        
+        .on-scale-ball { position: absolute; top: -26px; cursor: grab; z-index: 5; }
+
+        /* 전환 장치 영역 */
+        .apparatus { width: 30px; height: 280px; background: #cbd5e1; border: 2px solid #64748b; position: relative; border-radius: 4px; display: flex; justify-content: center; }
+        .apparatus-pipe { width: 12px; height: 100%; background: #e2e8f0; border-left: 1px solid #94a3b8; border-right: 1px solid #94a3b8; }
+        
+        .point-label { position: absolute; font-size: 12px; font-weight: bold; color: #0f172a; display: none; }
+        .label-o { left: -32px; top: -6px; }
+        .label-a { left: -85px; top: 96px; }
+        .label-b { left: -85px; top: 206px; }
+
+        .distance-overlay { position: absolute; left: -140px; top: 0; width: 110px; height: 280px; display: none; pointer-events: none; }
+        .dist-line { position: absolute; border-left: 2px dashed #0284c7; border-top: 2px dashed #0284c7; border-bottom: 2px dashed #0284c7; }
+        .dist-line-oa { left: 45px; top: 8px; width: 60px; height: 96px; }
+        .dist-line-ob { left: 10px; top: 8px; width: 95px; height: 206px; }
+        .dist-text { position: absolute; font-size: 11px; font-weight: bold; color: #0369a1; background: #f8fafc; padding: 1px 4px; border-radius: 3px; }
+        .text-oa { left: 52px; top: 46px; }
+        .text-ob { left: -38px; top: 100px; }
+
+        .sensor { width: 95px; height: 32px; background: #1e3a8a; border: 1px solid #3b82f6; color: white; position: absolute; left: -32px; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 4px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .sensor-top { top: 90px; }
+        .sensor-bottom { top: 200px; }
+        
+        .ball-drop { background: radial-gradient(circle at 30% 30%, #ffffff, #64748b, #0f172a); border-radius: 50%; position: absolute; transition: top 0.4s linear; display: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        .ball-big-style { width: 22px; height: 22px; left: 2px; }
+        .ball-golf-style { width: 20px; height: 20px; left: 3px; background: radial-gradient(circle at 30% 30%, #ffffff, #e2e8f0, #94a3b8); border: 1px solid #cbd5e1; }
+
+        /* 테이블 및 입력 스타일 */
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 5px; }
+        th, td { border: 1px solid #cbd5e1; text-align: center; padding: 6px 4px; }
+        th { background: #f1f5f9; }
+        
+        .direct-input { width: 80%; padding: 6px; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px; background-color: #fff; }
+        .direct-input:focus { outline: 2px solid #2563eb; background-color: #f0fdf4; }
+
+        sup { vertical-align: super; font-size: 10px; line-height: 0; position: relative; top: -3px; font-weight: bold; }
+
+        .calc-table .direct-input { width: 48px; padding: 4px 1px; text-align: center; font-size: 12px; }
+        .calc-table input.result-field { width: 62px; background-color: #f8fafc; font-weight: bold; color: #1e293b; border: 1px solid #94a3b8; text-align: center; font-size: 12px; padding: 4px 1px; }
+
+        /* 데이터 해석 입력 칸 너비 확대 */
+        .interpret-table .direct-input { width: 70px; padding: 4px 2px; text-align: center; font-size: 12px; }
+        .interpret-table input.result-field { width: 75px; background-color: #f8fafc; font-weight: bold; color: #1e293b; border: 1px solid #94a3b8; text-align: center; font-size: 12px; padding: 4px 2px; }
+        
+        .formula-cell { display: flex; align-items: center; justify-content: center; gap: 3px; flex-wrap: nowrap; white-space: nowrap; font-size: 11px; }
+        .fraction { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; font-weight: bold; font-size: 10px; line-height: 1; padding: 0 1px; }
+        .fraction .num { border-bottom: 1px solid #000; padding-bottom: 1px; }
+        .fraction .den { padding-top: 1px; }
+
+        /* 카드 드래그 앤 드롭 영역 */
+        .card-container { display: flex; justify-content: center; gap: 10px; margin-top: 12px; margin-bottom: 5px; flex-wrap: wrap; }
+        .state-card { background: #3b82f6; color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.1); touch-action: none; }
+        .state-card:active { cursor: grabbing; opacity: 0.8; }
+
+        .drop-card-slot { display: inline-flex; align-items: center; justify-content: center; min-width: 60px; height: 26px; border: 1.5px dashed #94a3b8; border-radius: 4px; background: #fff; font-size: 11px; font-weight: bold; color: #2563eb; padding: 0 4px; margin: 0 2px; }
+        .drop-card-slot.has-card { border-style: solid; border-color: #2563eb; background: #eff6ff; }
+
+        .drag-clone { position: fixed; pointer-events: none; z-index: 1000; opacity: 0.85; transform: translate(-50%, -50%); }
+
+        @keyframes blink-error {
+            0% { border-color: #ef4444; background-color: #fef2f2; box-shadow: 0 0 5px #ef4444; }
+            50% { border-color: #cbd5e1; background-color: #ffffff; box-shadow: none; }
+            100% { border-color: #ef4444; background-color: #fef2f2; box-shadow: 0 0 5px #ef4444; }
+        }
+        .input-error { animation: blink-error 0.8s infinite !important; border: 2px solid #ef4444 !important; }
+
+        .btn-group { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+        .btn-check { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn-check:hover { background: #1d4ed8; }
+        .btn-next { background: #16a34a; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; opacity: 0.5; pointer-events: none; }
+        .btn-next.active { opacity: 1; pointer-events: auto; }
+        .btn-next.active:hover { background: #15803d; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>역학적 에너지 전환 실험 (Mechanical Energy Conversion Experiment)</h1>
+</div>
+
+<div class="main-container">
+    <div class="top-row">
+        <!-- 1. 실험 기구 박스 -->
+        <div class="box">
+            <div class="box-title">실험 기구</div>
+            <div class="tool-grid" id="tool-grid-container">
+                <div class="draggable" draggable="true" data-type="scale">
+                    <svg viewBox="0 0 100 80">
+                        <rect x="20" y="20" width="60" height="8" rx="2" fill="#94a3b8"/>
+                        <rect x="42" y="28" width="16" height="10" fill="#64748b"/>
+                        <rect x="10" y="38" width="80" height="35" rx="6" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
+                        <rect x="25" y="48" width="50" height="18" rx="2" fill="#86efac" stroke="#475569" stroke-width="1.5"/>
+                        <text x="50" y="61" font-size="10" font-family="monospace" font-weight="bold" text-anchor="middle" fill="#0f172a">0.0 g</text>
+                    </svg>
+                    <span>전자저울</span>
+                </div>
+
+                <div class="draggable" draggable="true" data-type="apparatus">
+                    <svg viewBox="0 0 60 90">
+                        <rect x="5" y="80" width="50" height="8" rx="2" fill="#78350f"/>
+                        <rect x="15" y="70" width="30" height="10" rx="2" fill="#b45309"/>
+                        <rect x="26" y="5" width="8" height="65" fill="#d1d5db" stroke="#4b5563" stroke-width="1"/>
+                        <rect x="30" y="5" width="2" height="65" fill="#9ca3af"/>
+                    </svg>
+                    <span>1m 역학적<br>에너지 전환 장치</span>
+                </div>
+
+                <div class="draggable" draggable="true" data-type="sensor1">
+                    <svg viewBox="0 0 80 80">
+                        <rect x="15" y="15" width="50" height="50" rx="6" fill="#1e3a8a" stroke="#3b82f6" stroke-width="2"/>
+                        <rect x="25" y="23" width="30" height="15" rx="2" fill="#93c5fd"/>
+                        <text x="40" y="34" font-size="8" font-family="monospace" text-anchor="middle" fill="#1e3a8a">v1 m/s</text>
+                        <circle cx="28" cy="52" r="6" fill="#60a5fa"/>
+                        <circle cx="52" cy="52" r="6" fill="#60a5fa"/>
+                    </svg>
+                    <span>속력측정기<br>(상)</span>
+                </div>
+
+                <div class="draggable" draggable="true" data-type="sensor2">
+                    <svg viewBox="0 0 80 80">
+                        <rect x="15" y="15" width="50" height="50" rx="6" fill="#1e3a8a" stroke="#3b82f6" stroke-width="2"/>
+                        <rect x="25" y="23" width="30" height="15" rx="2" fill="#93c5fd"/>
+                        <text x="40" y="34" font-size="8" font-family="monospace" text-anchor="middle" fill="#1e3a8a">v2 m/s</text>
+                        <circle cx="28" cy="52" r="6" fill="#60a5fa"/>
+                        <circle cx="52" cy="52" r="6" fill="#60a5fa"/>
+                    </svg>
+                    <span>속력측정기<br>(하)</span>
+                </div>
+
+                <div class="draggable" id="src-ball" draggable="true" data-type="ball-target">
+                    <svg viewBox="0 0 80 80" id="src-ball-svg">
+                        <circle cx="40" cy="40" r="28" fill="url(#gradBig)"/>
+                        <defs>
+                            <radialGradient id="gradBig" cx="35%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#ffffff"/>
+                                <stop offset="40%" stop-color="#94a3b8"/>
+                                <stop offset="100%" stop-color="#1e293b"/>
+                            </radialGradient>
+                        </defs>
+                    </svg>
+                    <span id="src-ball-name">큰 쇠구슬</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 배치 영역 박스 (기본 깜빡임 설정) -->
+        <div class="box active-step-placement" id="drop-zone">
+            <div class="box-title">실험 기구 배치</div>
+            <div class="instruction" id="guide-msg">1단계: 전자저울과 역학적 에너지 전환 장치를 드래그하여 배치하세요.</div>
+            <div class="workspace" id="workspace">
+                <div id="scale-target" style="display:none;" class="scale-area">
+                    <div class="scale-plate" id="scale-plate">
+                        <div id="on-scale-ball-container"></div>
+                    </div>
+                    <div style="font-size:11px; font-weight:bold; color:#475569;">전자저울</div>
+                    <div class="scale-display" id="scale-weight">0.0 g</div>
+                </div>
+                <div id="apparatus-target" style="display:none;" class="apparatus">
+                    <div id="lbl-o" class="point-label label-o">O점</div>
+                    <div id="lbl-a" class="point-label label-a">A점</div>
+                    <div id="lbl-b" class="point-label label-b">B점</div>
+
+                    <div id="dist-overlay" class="distance-overlay">
+                        <div class="dist-line dist-line-oa" id="line-oa"></div>
+                        <div class="dist-text text-oa" id="txt-oa">400mm</div>
+                        <div class="dist-line dist-line-ob" id="line-ob"></div>
+                        <div class="dist-text text-ob" id="txt-ob">800mm</div>
+                    </div>
+
+                    <div class="apparatus-pipe"></div>
+                    <div id="sensor-top-target" class="sensor sensor-top" style="display:none;">속력측정기(상)</div>
+                    <div id="sensor-bottom-target" class="sensor sensor-bottom" style="display:none;">속력측정기(하)</div>
+                    <div id="ball-anim" class="ball-drop"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 데이터 기록 박스 -->
+    <div class="box" id="box-record">
+        <div class="box-title">데이터 기록</div>
+        <table class="record-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">대상</th>
+                    <th style="width: 17%;">질량(kg)</th>
+                    <th style="width: 17%;">O점~A점 높이(m)</th>
+                    <th style="width: 17%;">속력측정기(상) 속력(m/s)</th>
+                    <th style="width: 17%;">O점~B점 높이(m)</th>
+                    <th style="width: 17%;">속력측정기(하) 속력(m/s)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b id="target-object-name">큰 쇠구슬</b></td>
+                    <td><input type="number" step="any" inputmode="decimal" class="direct-input record-field" id="m1"></td>
+                    <td><input type="number" step="any" inputmode="decimal" class="direct-input record-field" id="h1_1"></td>
+                    <td><input type="number" step="any" inputmode="decimal" class="direct-input record-field" id="v1_1"></td>
+                    <td><input type="number" step="any" inputmode="decimal" class="direct-input record-field" id="h2_1"></td>
+                    <td><input type="number" step="any" inputmode="decimal" class="direct-input record-field" id="v2_1"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 4. 데이터 처리 박스 -->
+    <div class="box" id="box-calc">
+        <div class="box-title">데이터 처리</div>
+        <table class="calc-table" id="calc-table-el">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">구분</th>
+                    <th style="width: 8%;">위치</th>
+                    <th style="width: 27%;">위치 에너지</th>
+                    <th style="width: 25%;">운동 에너지</th>
+                    <th style="width: 30%;">역학적 에너지</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-point="O">
+                    <td rowspan="3"><b id="calc-object-name">큰 쇠구슬</b></td>
+                    <td><b>O점</b></td>
+                    <td>
+                        <div class="formula-cell">
+                            <input type="number" step="any" class="direct-input pe-m" oninput="updateRowCalc(this)"> × 
+                            <input type="number" step="any" class="direct-input pe-g" oninput="updateRowCalc(this)"> × 
+                            <input type="number" step="any" class="direct-input pe-h" oninput="updateRowCalc(this)"> = 
+                            <input type="text" class="result-field pe-res" readonly>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="formula-cell">
+                            <span class="fraction"><span class="num">1</span><span class="den">2</span></span> × 
+                            <input type="number" step="any" class="direct-input ke-m" oninput="updateRowCalc(this)"> × 
+                            (<input type="number" step="any" class="direct-input ke-v" oninput="updateRowCalc(this)">)<sup>2</sup> = 
+                            <input type="text" class="result-field ke-res" readonly>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="formula-cell">
+                            <input type="number" step="any" class="direct-input me-m1" readonly style="background-color: #f1f5f9;"> × 
+                            <input type="number" step="any" class="direct-input me-g" readonly style="background-color: #f1f5f9;"> × 
+                            <input type="number" step="any" class="direct-input me-h" readonly style="background-color: #f1f5f9;"> + 
+                            <span class="fraction"><span class="num">1</span><span class="den">2</span></span> × 
+                            <input type="number" step="any" class="direct-input me-m2" readonly style="background-color: #f1f5f9;"> × 
+                            (<input type="number" step="any" class="direct-input me-v" readonly style="background-color: #f1f5f9;">)<sup>2</sup> = 
+                            <input type="text" class="result-field me-res" readonly>
+                        </div>
+                    </td>
+                </tr>
+                <tr data-point="A">
+                    <td><b>A점</b></td>
+                    <td>
+                        <div class="formula-cell">
+                            <input type="number" step="any" class="direct-input pe-m" oninput="updateRowCalc(this)"> × 
+                            <input type="number" step="any" class="direct-input pe-g" oninput="updateRowCalc(this)"> × 
+                            <input type="number" step="any" class="direct-input pe-h" oninput="updateRowCalc(this)"> = 
+                            <input type="text" class="result-field pe-res" readonly>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="formula-cell">
+                            <span class="fraction"><span class="num">1</span><span class="den">2</span></span> × 
+                            <input type="number" step="any" class="direct-input ke-m" oninput="updateRowCalc(this)"> × 
+                            (<input type="number" step="any" class="direct-input ke-v" oninput="updateRowCalc(this)">)<sup>2</sup> = 
+                            <input type="text" class="result-field ke-res" readonly>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="formula-cell">
+                            <input type="number" step="any" class="direct-input me-m1" readonly style="background-color: #f1f5f9;"> × 
+                            <input type="number" step="any" class="direct-input me-g" readonly style="background-color: #f1f5f9;"> × 
+                            <input type="number" step="any" class="direct-input me-h" readonly style="background-color: #f1f5f9;"> + 
+                            <span class="fraction"><span class="num">1</span><span class="den">2</span></span> × 
+                            <input type="number" step="any" class="direct-input me-m2" readonly style="background-color: #f1f5f9;"> × 
+                            (<input type="number" step="any" class="direct-input me-v" readonly style="background-color: #f1f5f9;">)<sup>2</sup> = 
+                            <input type="text" class="result-field me-res" readonly>
+                        </div>
+                    </td>
+                </tr>
+                <tr data-point="B">
+                    <td><b>B점</b></td>
+                    <td>
+                        <div class="formula-cell">
+                            <input type="number" step="any" class="direct-input pe-m" oninput="updateRowCalc(this)"> × 
+                            <input type="number" step="any" class="direct-input pe-g" oninput="updateRowCalc(this)"> × 
+                            <input type="number" step="any" class="direct-input pe-h" oninput="updateRowCalc(this)"> = 
+                            <input type="text" class="result-field pe-res" readonly>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="formula-cell">
+                            <span class="fraction"><span class="num">1</span><span class="den">2</span></span> × 
+                            <input type="number" step="any" class="direct-input ke-m" oninput="updateRowCalc(this)"> × 
+                            (<input type="number" step="any" class="direct-input ke-v" oninput="updateRowCalc(this)">)<sup>2</sup> = 
+                            <input type="text" class="result-field ke-res" readonly>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="formula-cell">
+                            <input type="number" step="any" class="direct-input me-m1" readonly style="background-color: #f1f5f9;"> × 
+                            <input type="number" step="any" class="direct-input me-g" readonly style="background-color: #f1f5f9;"> × 
+                            <input type="number" step="any" class="direct-input me-h" readonly style="background-color: #f1f5f9;"> + 
+                            <span class="fraction"><span class="num">1</span><span class="den">2</span></span> × 
+                            <input type="number" step="any" class="direct-input me-m2" readonly style="background-color: #f1f5f9;"> × 
+                            (<input type="number" step="any" class="direct-input me-v" readonly style="background-color: #f1f5f9;">)<sup>2</sup> = 
+                            <input type="text" class="result-field me-res" readonly>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 5. 데이터 해석 박스 -->
+    <div class="box" id="box-interpret">
+        <div class="box-title">데이터 해석</div>
+        <table class="interpret-table" id="interpret-table-el">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">구간</th>
+                    <th style="width: 29%;">위치에너지 변화</th>
+                    <th style="width: 28%;">운동에너지 변화</th>
+                    <th style="width: 28%;">역학적 에너지 변화</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr data-section="OA">
+                    <td><b>O점 ~ A점</b></td>
+                    <td>
+                        <div class="formula-cell">
+                            <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
+                            <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
+                            <input type="text" class="result-field diff-res" readonly>
+                            <div class="drop-card-slot" data-slot="pe_oa">카드 드래그</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="formula-cell">
+                            <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
+                            <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
+                            <input type="text" class="result-field diff-res" readonly>
+                            <div class="drop-card-slot" data-slot="ke_oa">카드 드래그</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="formula-cell">
+                            <div class="drop-card-slot" data-slot="me_oa">카드 드래그</div>
+                        </div>
+                    </td>
+                </tr>
+                <tr data-section="AB">
+                    <td><b>A점 ~ B점</b></td>
+                    <td>
+                        <div class="formula-cell">
+                            <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
+                            <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
+                            <input type="text" class="result-field diff-res" readonly>
+                            <div class="drop-card-slot" data-slot="pe_ab">카드 드래그</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="formula-cell">
+                            <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
+                            <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
+                            <input type="text" class="result-field diff-res" readonly>
+                            <div class="drop-card-slot" data-slot="ke_ab">카드 드래그</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="formula-cell">
+                            <div class="drop-card-slot" data-slot="me_ab">카드 드래그</div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td rowspan="2"><b>결론</b></td>
+                    <td><b>역학적 에너지 전환</b></td>
+                    <td colspan="2" style="text-align: left; padding-left: 15px;">
+                        자유 낙하 하는 물체는 
+                        (<div class="drop-card-slot" data-slot="c_trans1">카드 드래그</div>) 에너지가 
+                        (<div class="drop-card-slot" data-slot="c_trans2">카드 드래그</div>) 에너지로 전환된다.
+                    </td>
+                </tr>
+                <tr>
+                    <td><b>역학적 에너지 보존</b></td>
+                    <td colspan="2" style="text-align: left; padding-left: 15px;">
+                        모든 구간에서 역학적 에너지는 
+                        (<div class="drop-card-slot" data-slot="c_cons">카드 드래그</div>) 하다.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="card-container">
+            <div class="state-card" draggable="true" data-card-val="감소">감소</div>
+            <div class="state-card" draggable="true" data-card-val="증가">증가</div>
+            <div class="state-card" draggable="true" data-card-val="변화 없음">변화 없음</div>
+            <div class="state-card" draggable="true" data-card-val="일정">일정</div>
+            <div class="state-card" draggable="true" data-card-val="위치">위치</div>
+            <div class="state-card" draggable="true" data-card-val="운동">운동</div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-check" onclick="checkAnswers()">정답확인</button>
+            <button class="btn-next" id="btn-next-question" onclick="loadNextQuestion()">새로운 문제 도전하기</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let step = 1;
+    let draggedType = null;
+    let draggedCardVal = null;
+    let currentMode = 'ball-big';
+    let touchActiveCard = null;
+    let touchClone = null;
+
+    let currentConfig = {
+        massKg: 0.032,
+        altMassKg: 0.03,
+        massG: '32.0 g',
+        oaM: 0.4,
+        obM: 0.8,
+        v1: 2.80,
+        v2: 3.96
+    };
+
+    // 소수점 넷째자리 반올림 (넷째자리에서 반올림하여 셋째자리까지 표시)
+    function roundToThree(val) {
+        if (isNaN(val)) return '';
+        return Math.round((val + Number.EPSILON) * 1000) / 1000;
+    }
+
+    // 단계별 깜빡임 전환 관리 함수
+    function setFocusBox(boxId) {
+        document.querySelectorAll('.box').forEach(b => {
+            b.classList.remove('active-step-placement', 'active-step-record', 'active-step-calc', 'active-step-interpret');
+        });
+        if (boxId === 'drop-zone') {
+            document.getElementById('drop-zone').classList.add('active-step-placement');
+        } else if (boxId === 'box-record') {
+            document.getElementById('box-record').classList.add('active-step-record');
+        } else if (boxId === 'box-calc') {
+            document.getElementById('box-calc').classList.add('active-step-calc');
+        } else if (boxId === 'box-interpret') {
+            document.getElementById('box-interpret').classList.add('active-step-interpret');
+        }
+    }
+
+    function checkRecordCompletion() {
+        const inputs = document.querySelectorAll('.record-field');
+        let allFilled = true;
+        inputs.forEach(ip => {
+            if (ip.value.trim() === '') allFilled = false;
+        });
+        if (allFilled && document.getElementById('box-record').classList.contains('active-step-record')) {
+            setFocusBox('box-calc');
+        }
+    }
+
+    function checkCalcCompletion() {
+        const rows = document.querySelectorAll('#calc-table-el tbody tr');
+        let allFilled = true;
+        rows.forEach(r => {
+            const peRes = r.querySelector('.pe-res').value;
+            const keRes = r.querySelector('.ke-res').value;
+            const meRes = r.querySelector('.me-res').value;
+            if (!peRes || !keRes || !meRes) allFilled = false;
+        });
+        if (allFilled && document.getElementById('box-calc').classList.contains('active-step-calc')) {
+            setFocusBox('box-interpret');
+        }
+    }
+
+    function attachDragListeners() {
+        document.querySelectorAll('.draggable').forEach(item => {
+            item.removeEventListener('dragstart', handleDragStart);
+            item.addEventListener('dragstart', handleDragStart);
+        });
+
+        document.querySelectorAll('.state-card').forEach(card => {
+            card.addEventListener('dragstart', (e) => {
+                draggedCardVal = e.currentTarget.getAttribute('data-card-val');
+            });
+
+            card.addEventListener('touchstart', handleTouchStart, { passive: false });
+            card.addEventListener('touchmove', handleTouchMove, { passive: false });
+            card.addEventListener('touchend', handleTouchEnd, { passive: false });
+        });
+
+        document.querySelectorAll('.drop-card-slot').forEach(slot => {
+            slot.addEventListener('dragover', (e) => e.preventDefault());
+            slot.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (draggedCardVal) {
+                    slot.innerText = draggedCardVal;
+                    slot.classList.add('has-card');
+                    slot.classList.remove('input-error');
+                }
+            });
+        });
+
+        document.querySelectorAll('.record-field').forEach(ip => {
+            ip.addEventListener('input', checkRecordCompletion);
+        });
+    }
+
+    function handleDragStart(e) {
+        draggedType = e.currentTarget.getAttribute('data-type');
+    }
+
+    function handleTouchStart(e) {
+        e.preventDefault();
+        touchActiveCard = e.currentTarget;
+        draggedCardVal = touchActiveCard.getAttribute('data-card-val');
+
+        const touch = e.touches[0];
+        touchClone = touchActiveCard.cloneNode(true);
+        touchClone.classList.add('drag-clone');
+        touchClone.style.left = touch.clientX + 'px';
+        touchClone.style.top = touch.clientY + 'px';
+        document.body.appendChild(touchClone);
+    }
+
+    function handleTouchMove(e) {
+        if (!touchClone) return;
+        e.preventDefault();
+        const touch = e.touches[0];
+        touchClone.style.left = touch.clientX + 'px';
+        touchClone.style.top = touch.clientY + 'px';
+    }
+
+    function handleTouchEnd(e) {
+        if (!touchClone) return;
+        const touch = e.changedTouches[0];
+        
+        if (touchClone) {
+            touchClone.remove();
+            touchClone = null;
+        }
+
+        const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+        if (dropTarget) {
+            const slot = dropTarget.closest('.drop-card-slot');
+            if (slot && draggedCardVal) {
+                slot.innerText = draggedCardVal;
+                slot.classList.add('has-card');
+                slot.classList.remove('input-error');
+            }
+        }
+        touchActiveCard = null;
+    }
+
+    attachDragListeners();
+
+    const dropZone = document.getElementById('drop-zone');
+    const guideMsg = document.getElementById('guide-msg');
+    const scaleBallContainer = document.getElementById('on-scale-ball-container');
+
+    dropZone.addEventListener('dragover', (e) => e.preventDefault());
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+
+        if (step === 1) {
+            if (draggedType === 'scale') {
+                document.getElementById('scale-target').style.display = 'flex';
+            } else if (draggedType === 'apparatus') {
+                document.getElementById('apparatus-target').style.display = 'flex';
+            }
+            if (document.getElementById('scale-target').style.display === 'flex' && 
+                document.getElementById('apparatus-target').style.display === 'flex') {
+                step = 2;
+                guideMsg.innerText = "2단계: 속력측정기 2개를 순서대로 설치하세요.";
+            }
+        } else if (step === 2) {
+            if (draggedType === 'sensor1') {
+                const sTop = document.getElementById('sensor-top-target');
+                sTop.innerText = "속력측정기(상)"; 
+                sTop.style.display = 'flex';
+            } else if (draggedType === 'sensor2') {
+                const sBot = document.getElementById('sensor-bottom-target');
+                sBot.innerText = "속력측정기(하)"; 
+                sBot.style.display = 'flex';
+            }
+            if (document.getElementById('sensor-top-target').style.display === 'flex' && 
+                document.getElementById('sensor-bottom-target').style.display === 'flex') {
+                step = 3;
+                const name = currentMode === 'ball-big' ? '큰 쇠구슬' : '골프공';
+                guideMsg.innerText = `3단계: ${name}을(를) 전자저울에 올려 질량을 측정하세요.`;
+                
+                document.getElementById('lbl-o').style.display = 'block';
+                document.getElementById('lbl-a').style.display = 'block';
+                document.getElementById('lbl-b').style.display = 'block';
+                document.getElementById('dist-overlay').style.display = 'block';
+            }
+        } else if (step === 3) {
+            if (draggedType === 'ball-target') {
+                renderBallOnScale(currentMode);
+                document.getElementById('scale-weight').innerText = currentConfig.massG;
+                document.getElementById('src-ball').style.visibility = 'hidden';
+                step = 4;
+                const name = currentMode === 'ball-big' ? '큰 쇠구슬' : '골프공';
+                guideMsg.innerText = `4단계: 저울 위의 ${name}을(를) 드래그하여 역학적 에너지 전환 장치 상단에 떨어뜨리세요.`;
+            }
+        } else if (step === 4) {
+            if (draggedType === 'ball-on-scale') {
+                scaleBallContainer.innerHTML = '';
+                runDropAnimation(currentMode, currentConfig.v1, currentConfig.v2, () => {
+                    guideMsg.innerText = "실험이 완료되었습니다. 아래 데이터 기록, 처리, 해석 표를 입력하세요.";
+                    setFocusBox('box-record'); // 배치 완료 시 기록 박스 깜빡임 시작
+                });
+            }
+        }
+    });
+
+    function renderBallOnScale(mode) {
+        const ballDiv = document.createElement('div');
+        ballDiv.className = 'on-scale-ball';
+        ballDiv.setAttribute('draggable', 'true');
+        ballDiv.setAttribute('data-type', 'ball-on-scale');
+
+        if (mode === 'ball-big') {
+            ballDiv.innerHTML = `
+                <svg width="30" height="30" viewBox="0 0 30 30">
+                    <circle cx="15" cy="15" r="13" fill="url(#gradBallScale)"/>
+                    <defs>
+                        <radialGradient id="gradBallScale" cx="35%" cy="35%" r="65%">
+                            <stop offset="0%" stop-color="#ffffff"/>
+                            <stop offset="40%" stop-color="#94a3b8"/>
+                            <stop offset="100%" stop-color="#1e293b"/>
+                        </radialGradient>
+                    </defs>
+                </svg>
+            `;
+        } else {
+            ballDiv.innerHTML = `
+                <svg width="26" height="26" viewBox="0 0 26 26">
+                    <circle cx="13" cy="13" r="11" fill="url(#gradGolfScale)" stroke="#cbd5e1" stroke-width="1"/>
+                    <defs>
+                        <radialGradient id="gradGolfScale" cx="35%" cy="35%" r="65%">
+                            <stop offset="0%" stop-color="#ffffff"/>
+                            <stop offset="50%" stop-color="#f1f5f9"/>
+                            <stop offset="100%" stop-color="#94a3b8"/>
+                        </radialGradient>
+                    </defs>
+                </svg>
+            `;
+        }
+
+        ballDiv.addEventListener('dragstart', (e) => {
+            draggedType = e.currentTarget.getAttribute('data-type');
+        });
+
+        scaleBallContainer.innerHTML = '';
+        scaleBallContainer.appendChild(ballDiv);
+    }
+
+    function runDropAnimation(mode, v1, v2, callback) {
+        const ball = document.getElementById('ball-anim');
+        const sensorTop = document.getElementById('sensor-top-target');
+        const sensorBottom = document.getElementById('sensor-bottom-target');
+
+        sensorTop.innerText = "속력측정기(상)";
+        sensorBottom.innerText = "속력측정기(하)";
+
+        ball.className = 'ball-drop ' + (mode === 'ball-big' ? 'ball-big-style' : 'ball-golf-style');
+        ball.style.display = 'block';
+        ball.style.top = '-10px';
+
+        setTimeout(() => { ball.style.top = '90px'; }, 50);
+
+        setTimeout(() => {
+            sensorTop.innerText = `속력측정기(상): ${v1}m/s`;
+            ball.style.top = '200px';
+        }, 450);
+
+        setTimeout(() => {
+            sensorBottom.innerText = `속력측정기(하): ${v2}m/s`;
+            ball.style.top = '255px';
+        }, 850);
+
+        setTimeout(() => {
+            if(callback) callback();
+        }, 1200);
+    }
+
+    // 소수점 넷째 자리 반올림 연동 로직
+    function updateRowCalc(element) {
+        element.classList.remove('input-error');
+        const row = element.closest('tr');
+        
+        // 1. 위치 에너지
+        const peInputs = row.querySelectorAll('.pe-m, .pe-g, .pe-h');
+        const peRes = row.querySelector('.pe-res');
+        const peVal1 = parseFloat(peInputs[0].value);
+        const peVal2 = parseFloat(peInputs[1].value);
+        const peVal3 = parseFloat(peInputs[2].value);
+
+        let peTotal = 0;
+        let isPeValid = false;
+
+        if (!isNaN(peVal1) && !isNaN(peVal2) && !isNaN(peVal3)) {
+            peTotal = peVal1 * peVal2 * peVal3;
+            peRes.value = roundToThree(peTotal);
+            isPeValid = true;
+        } else {
+            peRes.value = '';
+        }
+
+        row.querySelector('.me-m1').value = peInputs[0].value;
+        row.querySelector('.me-g').value = peInputs[1].value;
+        row.querySelector('.me-h').value = peInputs[2].value;
+
+        // 2. 운동 에너지
+        const keInputs = row.querySelectorAll('.ke-m, .ke-v');
+        const keRes = row.querySelector('.ke-res');
+        const keVal1 = parseFloat(keInputs[0].value);
+        const keVal2 = parseFloat(keInputs[1].value);
+
+        let keTotal = 0;
+        let isKeValid = false;
+
+        if (!isNaN(keVal1) && !isNaN(keVal2)) {
+            keTotal = 0.5 * keVal1 * Math.pow(keVal2, 2);
+            keRes.value = roundToThree(keTotal);
+            isKeValid = true;
+        } else {
+            keRes.value = '';
+        }
+
+        row.querySelector('.me-m2').value = keInputs[0].value;
+        row.querySelector('.me-v').value = keInputs[1].value;
+
+        // 3. 역학적 에너지
+        const meRes = row.querySelector('.me-res');
+        if (isPeValid && isKeValid) {
+            meRes.value = roundToThree(peTotal + keTotal);
+            meRes.classList.remove('input-error');
+        } else {
+            meRes.value = '';
+        }
+
+        checkCalcCompletion();
+    }
+
+    function calcDiff(element) {
+        element.classList.remove('input-error');
+        const cell = element.closest('.formula-cell');
+        const inputs = cell.querySelectorAll('.direct-input');
+        const resultField = cell.querySelector('.result-field');
+
+        const val1 = parseFloat(inputs[0].value);
+        const val2 = parseFloat(inputs[1].value);
+
+        if (!isNaN(val1) && !isNaN(val2)) {
+            resultField.value = roundToThree(Math.abs(val1 - val2));
+        } else {
+            resultField.value = '';
+        }
+    }
+
+    document.querySelectorAll('.direct-input').forEach(input => {
+        input.addEventListener('input', () => {
+            input.classList.remove('input-error');
+        });
+    });
+
+    function checkAnswers() {
+        let allCorrect = true;
+
+        const checkFieldMulti = (el, validCandidates, tol = 0.001) => {
+            if(!el) return;
+            const val = parseFloat(el.value);
+            if (isNaN(val)) {
+                el.classList.add('input-error');
+                allCorrect = false;
+                return;
+            }
+            const isMatched = validCandidates.some(cand => Math.abs(val - cand) <= tol);
+            if (!isMatched) {
+                el.classList.add('input-error');
+                allCorrect = false;
+            } else {
+                el.classList.remove('input-error');
+            }
+        };
+
+        const checkSlotCard = (slotEl, expectedVal) => {
+            if (!slotEl || slotEl.innerText.trim() !== expectedVal) {
+                slotEl.classList.add('input-error');
+                allCorrect = false;
+            } else {
+                slotEl.classList.remove('input-error');
+            }
+        };
+
+        const mKgCandidates = currentConfig.altMassKg ? [currentConfig.massKg, currentConfig.altMassKg] : [currentConfig.massKg];
+
+        // 1. 데이터 기록 검증
+        checkFieldMulti(document.getElementById('m1'), mKgCandidates);
+        checkFieldMulti(document.getElementById('h1_1'), [currentConfig.oaM]);
+        checkFieldMulti(document.getElementById('v1_1'), [currentConfig.v1]); 
+        checkFieldMulti(document.getElementById('h2_1'), [currentConfig.obM]);
+        checkFieldMulti(document.getElementById('v2_1'), [currentConfig.v2]);
+
+        // 2. 데이터 처리 검증
+        const totalHeight = currentConfig.obM; 
+        const pointTargets = {
+            'O': { h: totalHeight, v: 0 },
+            'A': { h: totalHeight - currentConfig.oaM, v: currentConfig.v1 },
+            'B': { h: 0, v: currentConfig.v2 }
+        };
+
+        const rows = document.querySelectorAll('#calc-table-el tbody tr');
+        rows.forEach(row => {
+            const ptKey = row.getAttribute('data-point');
+            const target = pointTargets[ptKey];
+
+            const peInputs = row.querySelectorAll('.pe-m, .pe-g, .pe-h');
+            checkFieldMulti(peInputs[0], [...mKgCandidates, 9.8]);
+            checkFieldMulti(peInputs[1], [...mKgCandidates, 9.8]);
+            checkFieldMulti(peInputs[2], [target.h]);
+
+            checkFieldMulti(row.querySelector('.ke-m'), mKgCandidates);
+            checkFieldMulti(row.querySelector('.ke-v'), [target.v]);
+
+            const meRes = row.querySelector('.me-res');
+            const expectedME = (9.8 * currentConfig.massKg * target.h) + (0.5 * currentConfig.massKg * Math.pow(target.v, 2));
+            checkFieldMulti(meRes, [expectedME]);
+        });
+
+        // 3. 데이터 해석 & 결론 검증
+        const rowOA = document.querySelector('tr[data-section="OA"]');
+        const rowAB = document.querySelector('tr[data-section="AB"]');
+
+        const peOA_inputs = rowOA.cells[1].querySelectorAll('.direct-input');
+        checkFieldMulti(peOA_inputs[0], [9.8 * currentConfig.massKg * pointTargets['O'].h, 9.8 * currentConfig.massKg * pointTargets['A'].h]);
+        checkFieldMulti(peOA_inputs[1], [9.8 * currentConfig.massKg * pointTargets['O'].h, 9.8 * currentConfig.massKg * pointTargets['A'].h]);
+        checkSlotCard(rowOA.querySelector('[data-slot="pe_oa"]'), '감소');
+
+        const keOA_inputs = rowOA.cells[2].querySelectorAll('.direct-input');
+        checkFieldMulti(keOA_inputs[0], [0, 0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2)]);
+        checkFieldMulti(keOA_inputs[1], [0, 0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2)]);
+        checkSlotCard(rowOA.querySelector('[data-slot="ke_oa"]'), '증가');
+
+        checkSlotCard(rowOA.querySelector('[data-slot="me_oa"]'), '변화 없음');
+
+        const peAB_inputs = rowAB.cells[1].querySelectorAll('.direct-input');
+        checkFieldMulti(peAB_inputs[0], [9.8 * currentConfig.massKg * pointTargets['A'].h, 0]);
+        checkFieldMulti(peAB_inputs[1], [9.8 * currentConfig.massKg * pointTargets['A'].h, 0]);
+        checkSlotCard(rowAB.querySelector('[data-slot="pe_ab"]'), '감소');
+
+        const keAB_inputs = rowAB.cells[2].querySelectorAll('.direct-input');
+        checkFieldMulti(keAB_inputs[0], [0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2), 0.5 * currentConfig.massKg * Math.pow(currentConfig.v2, 2)]);
+        checkFieldMulti(keAB_inputs[1], [0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2), 0.5 * currentConfig.massKg * Math.pow(currentConfig.v2, 2)]);
+        checkSlotCard(rowAB.querySelector('[data-slot="ke_ab"]'), '증가');
+
+        checkSlotCard(rowAB.querySelector('[data-slot="me_ab"]'), '변화 없음');
+
+        checkSlotCard(document.querySelector('[data-slot="c_trans1"]'), '위치');
+        checkSlotCard(document.querySelector('[data-slot="c_trans2"]'), '운동');
+        checkSlotCard(document.querySelector('[data-slot="c_cons"]'), '일정');
+
+        if (allCorrect) {
+            setFocusBox(null); // 모든 검증 완료 시 깜빡임 종료
+            alert("정답입니다! 완벽하게 데이터 해석 및 결론을 도출했습니다.");
+            document.getElementById('btn-next-question').classList.add('active');
+        } else {
+            alert("일부 오답이 있습니다. 빨간색으로 표시된 칸을 다시 확인해 주세요.");
+        }
+    }
+
+    function loadNextQuestion() {
+        currentMode = 'golf';
+        currentConfig = {
+            massKg: 0.046,
+            altMassKg: null,
+            massG: '46.0 g',
+            oaM: 0.3,
+            obM: 0.6,
+            v1: 2.424,
+            v2: 3.43
+        };
+
+        document.getElementById('target-object-name').innerText = '골프공';
+        document.getElementById('calc-object-name').innerText = '골프공';
+        document.getElementById('src-ball-name').innerText = '골프공';
+        document.getElementById('txt-oa').innerText = '300mm';
+        document.getElementById('txt-ob').innerText = '600mm';
+
+        document.getElementById('src-ball-svg').innerHTML = `
+            <circle cx="40" cy="40" r="24" fill="url(#gradGolf)" stroke="#cbd5e1" stroke-width="2"/>
+            <defs>
+                <radialGradient id="gradGolf" cx="35%" cy="35%" r="65%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="50%" stop-color="#f1f5f9"/>
+                    <stop offset="100%" stop-color="#94a3b8"/>
+                </radialGradient>
+            </defs>
+        `;
+
+        resetWorkspace();
+    }
+
+    function resetWorkspace() {
+        step = 1;
+        draggedType = null;
+
+        document.getElementById('scale-target').style.display = 'none';
+        document.getElementById('apparatus-target').style.display = 'none';
+        
+        const sTop = document.getElementById('sensor-top-target');
+        const sBot = document.getElementById('sensor-bottom-target');
+        sTop.innerText = "속력측정기(상)";
+        sBot.innerText = "속력측정기(하)";
+        sTop.style.display = 'none';
+        sBot.style.display = 'none';
+
+        document.getElementById('lbl-o').style.display = 'none';
+        document.getElementById('lbl-a').style.display = 'none';
+        document.getElementById('lbl-b').style.display = 'none';
+        document.getElementById('dist-overlay').style.display = 'none';
+        document.getElementById('ball-anim').style.display = 'none';
+        
+        document.getElementById('scale-weight').innerText = '0.0 g';
+        document.getElementById('src-ball').style.visibility = 'visible';
+        scaleBallContainer.innerHTML = '';
+
+        guideMsg.innerText = "1단계: 전자저울과 역학적 에너지 전환 장치를 드래그하여 배치하세요.";
+
+        document.querySelectorAll('.direct-input').forEach(input => {
+            input.value = '';
+            input.classList.remove('input-error');
+        });
+        document.querySelectorAll('.result-field').forEach(res => {
+            res.value = '';
+        });
+
+        document.querySelectorAll('.drop-card-slot').forEach(slot => {
+            slot.innerText = '카드 드래그';
+            slot.classList.remove('has-card', 'input-error');
+        });
+
+        document.getElementById('btn-next-question').classList.remove('active');
+        setFocusBox('drop-zone'); // 다시 1단계 박스 깜빡임 설정
+        attachDragListeners();
+    }
+</script>
+
+</body>
+</html>
