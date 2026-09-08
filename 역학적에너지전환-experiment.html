@@ -131,10 +131,17 @@
         .fraction .num { border-bottom: 1px solid #000; padding-bottom: 1px; }
         .fraction .den { padding-top: 1px; }
 
-        /* 카드 드래그 앤 드롭 영역 */
-        .card-container { display: flex; justify-content: center; gap: 10px; margin-top: 12px; margin-bottom: 5px; flex-wrap: wrap; }
-        .state-card { background: #3b82f6; color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.1); touch-action: none; -webkit-user-drag: none; }
-        .state-card:active { cursor: grabbing; opacity: 0.8; }
+        /* 🌟 카드 드래그 앤 드롭 영역 스타일 개선 (그룹 분리) */
+        .card-container { display: flex; justify-content: center; align-items: center; margin-top: 12px; margin-bottom: 5px; flex-wrap: wrap; }
+        .card-group { display: flex; gap: 8px; }
+        .card-separator { width: 2px; height: 22px; background-color: #cbd5e1; margin: 0 15px; border-radius: 1px; }
+        
+        .state-card { color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.1); touch-action: none; -webkit-user-drag: none; transition: transform 0.1s; }
+        .state-card:active { cursor: grabbing; opacity: 0.8; transform: scale(0.95); }
+        
+        /* 그룹별 색상 구분 */
+        .card-type-change { background: #3b82f6; } /* 상태 변화: 감소, 증가, 일정 (파란색) */
+        .card-type-energy { background: #8b5cf6; } /* 에너지 종류: 위치, 운동 (보라색) */
 
         .drop-card-slot { display: inline-flex; align-items: center; justify-content: center; min-width: 60px; height: 26px; border: 1.5px dashed #94a3b8; border-radius: 4px; background: #fff; font-size: 11px; font-weight: bold; color: #2563eb; padding: 0 4px; margin: 0 2px; }
         .drop-card-slot.has-card { border-style: solid; border-color: #2563eb; background: #eff6ff; }
@@ -333,13 +340,21 @@
             </tbody>
         </table>
 
-        <!-- 🌟 '변화 없음' 카드가 제거된 5개 카드 영역 -->
+        <!-- 🌟 시각적 그룹으로 명확히 분리된 카드 영역 -->
         <div class="card-container">
-            <div class="state-card" draggable="true" data-card-val="감소">감소</div>
-            <div class="state-card" draggable="true" data-card-val="증가">증가</div>
-            <div class="state-card" draggable="true" data-card-val="일정">일정</div>
-            <div class="state-card" draggable="true" data-card-val="위치">위치</div>
-            <div class="state-card" draggable="true" data-card-val="운동">운동</div>
+            <!-- 그룹 1: 상태/변화 카드 (파란색) -->
+            <div class="card-group">
+                <div class="state-card card-type-change" draggable="true" data-card-val="감소">감소</div>
+                <div class="state-card card-type-change" draggable="true" data-card-val="증가">증가</div>
+                <div class="state-card card-type-change" draggable="true" data-card-val="일정">일정</div>
+            </div>
+            <!-- 구분선 -->
+            <div class="card-separator"></div>
+            <!-- 그룹 2: 에너지 종류 카드 (보라색) -->
+            <div class="card-group">
+                <div class="state-card card-type-energy" draggable="true" data-card-val="위치">위치</div>
+                <div class="state-card card-type-energy" draggable="true" data-card-val="운동">운동</div>
+            </div>
         </div>
 
         <div class="btn-group">
@@ -1202,7 +1217,7 @@
             checkFieldMulti(meRes, [expectedME]);
         });
 
-        // 3. 데이터 해석 검증 (🌟 '역학적 에너지 변화' 정답 기준: '일정'으로 수정)
+        // 3. 데이터 해석 검증 (🌟 큰 쇠구슬 실험 포함 전체 역학적 에너지 변화: '일정'으로 수정)
         if (currentMode === 'ball-big') {
             const rowOA = document.querySelector('tr[data-section="OA"]');
             const rowAB = document.querySelector('tr[data-section="AB"]');
@@ -1217,7 +1232,7 @@
             checkFieldMulti(keOA_inputs[1], [0, 0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2)]);
             checkSlotCard(rowOA.querySelector('[data-slot="ke_oa"]'), '증가');
 
-            // 🌟 역학적 에너지 변화 슬롯 -> '일정'
+            // 🌟 역학적 에너지 변화 -> '일정'
             checkSlotCard(rowOA.querySelector('[data-slot="me_oa"]'), '일정');
 
             const peAB_inputs = rowAB.cells[1].querySelectorAll('.direct-input');
@@ -1225,7 +1240,12 @@
             checkFieldMulti(peAB_inputs[1], [9.8 * currentConfig.massKg * pointTargets['A'].h, 0]);
             checkSlotCard(rowAB.querySelector('[data-slot="pe_ab"]'), '감소');
 
-            // 🌟 역학적 에너지 변화 슬롯 -> '일정'
+            const keAB_inputs = rowAB.cells[2].querySelectorAll('.direct-input');
+            checkFieldMulti(keAB_inputs[0], [0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2), 0.5 * currentConfig.massKg * Math.pow(currentConfig.v2, 2)]);
+            checkFieldMulti(keAB_inputs[1], [0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2), 0.5 * currentConfig.massKg * Math.pow(currentConfig.v2, 2)]);
+            checkSlotCard(rowAB.querySelector('[data-slot="ke_ab"]'), '증가');
+
+            // 🌟 역학적 에너지 변화 -> '일정'
             checkSlotCard(rowAB.querySelector('[data-slot="me_ab"]'), '일정');
 
             checkSlotCard(document.querySelector('[data-slot="c_trans1"]'), '위치');
@@ -1245,7 +1265,7 @@
             checkFieldMulti(keBA_inputs[1], [0.5 * currentConfig.massKg * Math.pow(currentConfig.v2, 2), 0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2)]);
             checkSlotCard(rowBA.querySelector('[data-slot="ke_ba"]'), '감소');
 
-            // 🌟 역학적 에너지 변화 슬롯 -> '일정'
+            // 🌟 역학적 에너지 변화 -> '일정'
             checkSlotCard(rowBA.querySelector('[data-slot="me_ba"]'), '일정');
 
             const peAO_inputs = rowAO.cells[1].querySelectorAll('.direct-input');
@@ -1258,7 +1278,7 @@
             checkFieldMulti(keAO_inputs[1], [0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2), 0]);
             checkSlotCard(rowAO.querySelector('[data-slot="ke_ao"]'), '감소');
 
-            // 🌟 역학적 에너지 변화 슬롯 -> '일정'
+            // 🌟 역학적 에너지 변화 -> '일정'
             checkSlotCard(rowAO.querySelector('[data-slot="me_ao"]'), '일정');
 
             checkSlotCard(document.querySelector('[data-slot="c_trans1"]'), '운동');
