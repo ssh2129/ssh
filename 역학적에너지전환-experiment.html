@@ -131,7 +131,7 @@
         .fraction .num { border-bottom: 1px solid #000; padding-bottom: 1px; }
         .fraction .den { padding-top: 1px; }
 
-        /* 🌟 맨 아래 카드 분리 표(Table) 스타일 */
+        /* 맨 아래 카드 분리 표(Table) 스타일 유지 */
         .card-table-wrapper { margin-top: 15px; margin-bottom: 5px; width: 100%; display: flex; justify-content: center; }
         .card-table { width: auto; min-width: 580px; border-collapse: collapse; border: 2px solid #cbd5e1; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .card-table td { padding: 8px 12px; vertical-align: middle; }
@@ -146,7 +146,7 @@
         .card-type-change { background: #2563eb; border: 1px solid #1d4ed8; } 
         .card-type-energy { background: #7c3aed; border: 1px solid #6d28d9; } 
 
-        .drop-card-slot { display: inline-flex; align-items: center; justify-content: center; min-width: 55px; height: 26px; border: 1.5px dashed #94a3b8; border-radius: 4px; background: #fff; font-size: 11px; font-weight: bold; color: #2563eb; padding: 0 4px; margin: 0 2px; }
+        .drop-card-slot { display: inline-flex; align-items: center; justify-content: center; min-width: 68px; height: 26px; border: 1.5px dashed #94a3b8; border-radius: 4px; background: #fff; font-size: 11px; font-weight: bold; color: #2563eb; padding: 0 4px; margin: 0 2px; }
         .drop-card-slot.has-card { border-style: solid; border-color: #2563eb; background: #eff6ff; }
 
         /* 잔상 드래그 클론 스타일 */
@@ -343,7 +343,7 @@
             </tbody>
         </table>
 
-        <!-- 🌟 요청사항 반영: 표(Table) 형태 카드 구분 [카드 | 감소, 증가, 일정 | 위치, 운동] -->
+        <!-- 🌟 표(Table) 형태 카드 구분 유지 [카드 | 감소, 증가, 일정 | 위치, 운동] -->
         <div class="card-table-wrapper">
             <table class="card-table">
                 <tr>
@@ -1013,7 +1013,7 @@
         `;
         calcTbody.innerHTML = calcHTML;
 
-        // 🌟 요청사항 반영: 슬롯 안의 안내 텍스트를 '드래그'로 완벽 변경
+        // 🌟 요청사항 반영: 슬롯 안의 안내 텍스트를 '카드 드래그'로 완벽 변경
         let interpretHTML = '';
         if (mode === 'ball-big') {
             interpretHTML = `
@@ -1024,7 +1024,7 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="pe_oa">드래그</div>
+                            <div class="drop-card-slot" data-slot="pe_oa">카드 드래그</div>
                         </div>
                     </td>
                     <td>
@@ -1032,12 +1032,12 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="ke_oa">드래그</div>
+                            <div class="drop-card-slot" data-slot="ke_oa">카드 드래그</div>
                         </div>
                     </td>
                     <td>
                         <div class="formula-cell">
-                            <div class="drop-card-slot" data-slot="me_oa">드래그</div>
+                            <div class="drop-card-slot" data-slot="me_oa">카드 드래그</div>
                         </div>
                     </td>
                 </tr>
@@ -1048,7 +1048,7 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="pe_ab">드래그</div>
+                            <div class="drop-card-slot" data-slot="pe_ab">카드 드래그</div>
                         </div>
                     </td>
                     <td>
@@ -1056,12 +1056,12 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="ke_ab">드래그</div>
+                            <div class="drop-card-slot" data-slot="ke_ab">카드 드래그</div>
                         </div>
                     </td>
                     <td>
                         <div class="formula-cell">
-                            <div class="drop-card-slot" data-slot="me_ab">드래그</div>
+                            <div class="drop-card-slot" data-slot="me_ab">카드 드래그</div>
                         </div>
                     </td>
                 </tr>
@@ -1070,15 +1070,15 @@
                     <td><b>역학적 에너지 전환</b></td>
                     <td colspan="2" style="text-align: left; padding-left: 15px;">
                         자유 낙하 하는 물체는 
-                        (<div class="drop-card-slot" data-slot="c_trans1">드래그</div>) 에너지가 
-                        (<div class="drop-card-slot" data-slot="c_trans2">드래그</div>) 에너지로 전환된다.
+                        (<div class="drop-card-slot" data-slot="c_trans1">카드 드래그</div>) 에너지가 
+                        (<div class="drop-card-slot" data-slot="c_trans2">카드 드래그</div>) 에너지로 전환된다.
                     </td>
                 </tr>
                 <tr>
                     <td><b>역학적 에너지 보존</b></td>
                     <td colspan="2" style="text-align: left; padding-left: 15px;">
                         모든 구간에서 역학적 에너지는 
-                        (<div class="drop-card-slot" data-slot="c_cons">드래그</div>) 하다.
+                        (<div class="drop-card-slot" data-slot="c_cons">카드 드래그</div>) 하다.
                     </td>
                 </tr>
             `;
@@ -1091,7 +1091,7 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="pe_ba">드래그</div>
+                            <div class="drop-card-slot" data-slot="pe_ba">카드 드래그</div>
                         </div>
                     </td>
                     <td>
@@ -1099,12 +1099,12 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="ke_ba">드래그</div>
+                            <div class="drop-card-slot" data-slot="ke_ba">카드 드래그</div>
                         </div>
                     </td>
                     <td>
                         <div class="formula-cell">
-                            <div class="drop-card-slot" data-slot="me_ba">드래그</div>
+                            <div class="drop-card-slot" data-slot="me_ba">카드 드래그</div>
                         </div>
                     </td>
                 </tr>
@@ -1115,7 +1115,7 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="pe_ao">드래그</div>
+                            <div class="drop-card-slot" data-slot="pe_ao">카드 드래그</div>
                         </div>
                     </td>
                     <td>
@@ -1123,12 +1123,12 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="ke_ao">드래그</div>
+                            <div class="drop-card-slot" data-slot="ke_ao">카드 드래그</div>
                         </div>
                     </td>
                     <td>
                         <div class="formula-cell">
-                            <div class="drop-card-slot" data-slot="me_ao">드래그</div>
+                            <div class="drop-card-slot" data-slot="me_ao">카드 드래그</div>
                         </div>
                     </td>
                 </tr>
@@ -1137,15 +1137,15 @@
                     <td><b>역학적 에너지 전환</b></td>
                     <td colspan="2" style="text-align: left; padding-left: 15px;">
                         위로 던져 올려진 물체는 
-                        (<div class="drop-card-slot" data-slot="c_trans1">드래그</div>) 에너지가 
-                        (<div class="drop-card-slot" data-slot="c_trans2">드래그</div>) 에너지로 전환된다.
+                        (<div class="drop-card-slot" data-slot="c_trans1">카드 드래그</div>) 에너지가 
+                        (<div class="drop-card-slot" data-slot="c_trans2">카드 드래그</div>) 에너지로 전환된다.
                     </td>
                 </tr>
                 <tr>
                     <td><b>역학적 에너지 보존</b></td>
                     <td colspan="2" style="text-align: left; padding-left: 15px;">
                         모든 구간에서 역학적 에너지는 
-                        (<div class="drop-card-slot" data-slot="c_cons">드래그</div>) 하다.
+                        (<div class="drop-card-slot" data-slot="c_cons">카드 드래그</div>) 하다.
                     </td>
                 </tr>
             `;
@@ -1410,7 +1410,7 @@
         });
 
         document.querySelectorAll('.drop-card-slot').forEach(slot => {
-            slot.innerText = '드래그';
+            slot.innerText = '카드 드래그';
             slot.classList.remove('has-card', 'input-error');
         });
 
