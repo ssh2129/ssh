@@ -131,7 +131,7 @@
         .fraction .num { border-bottom: 1px solid #000; padding-bottom: 1px; }
         .fraction .den { padding-top: 1px; }
 
-        /* 맨 아래 카드 분리 표(Table) 스타일 유지 */
+        /* 맨 아래 카드 분리 표(Table) 스타일 */
         .card-table-wrapper { margin-top: 15px; margin-bottom: 5px; width: 100%; display: flex; justify-content: center; }
         .card-table { width: auto; min-width: 580px; border-collapse: collapse; border: 2px solid #cbd5e1; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .card-table td { padding: 8px 12px; vertical-align: middle; }
@@ -146,7 +146,7 @@
         .card-type-change { background: #2563eb; border: 1px solid #1d4ed8; } 
         .card-type-energy { background: #7c3aed; border: 1px solid #6d28d9; } 
 
-        .drop-card-slot { display: inline-flex; align-items: center; justify-content: center; min-width: 68px; height: 26px; border: 1.5px dashed #94a3b8; border-radius: 4px; background: #fff; font-size: 11px; font-weight: bold; color: #2563eb; padding: 0 4px; margin: 0 2px; }
+        .drop-card-slot { display: inline-flex; align-items: center; justify-content: center; min-width: 75px; height: 26px; border: 1.5px dashed #94a3b8; border-radius: 4px; background: #fff; font-size: 11px; font-weight: bold; color: #2563eb; padding: 0 4px; margin: 0 2px; }
         .drop-card-slot.has-card { border-style: solid; border-color: #2563eb; background: #eff6ff; }
 
         /* 잔상 드래그 클론 스타일 */
@@ -343,7 +343,7 @@
             </tbody>
         </table>
 
-        <!-- 🌟 표(Table) 형태 카드 구분 유지 [카드 | 감소, 증가, 일정 | 위치, 운동] -->
+        <!-- 맨 아래 표 구조 유지 [카드 | 감소, 증가, 일정 | 위치, 운동] -->
         <div class="card-table-wrapper">
             <table class="card-table">
                 <tr>
@@ -1013,7 +1013,7 @@
         `;
         calcTbody.innerHTML = calcHTML;
 
-        // 🌟 요청사항 반영: 슬롯 안의 안내 텍스트를 '카드 드래그'로 완벽 변경
+        // 🌟 슬롯 안의 안내 텍스트를 정확하게 '카드 드래그'로 표시
         let interpretHTML = '';
         if (mode === 'ball-big') {
             interpretHTML = `
