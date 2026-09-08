@@ -142,7 +142,6 @@
         .state-card { color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.12); touch-action: none; -webkit-user-drag: none; transition: transform 0.1s; }
         .state-card:active { cursor: grabbing; opacity: 0.8; transform: scale(0.95); }
         
-        /* 🎨 카드 그룹 색상 구분 */
         .card-type-change { background: #2563eb; border: 1px solid #1d4ed8; } 
         .card-type-energy { background: #7c3aed; border: 1px solid #6d28d9; } 
 
@@ -580,7 +579,6 @@
                 if (dropTarget) {
                     const dropZoneEl = dropTarget.closest('#drop-zone');
                     if (dropZoneEl && draggedType) {
-                        // 🌟 위치 좌표(clientY)를 함께 전달하여 위치 조건 판단
                         processDropEvent(draggedType, upEvt.clientY);
                     }
 
@@ -651,7 +649,7 @@
     const guideMsg = document.getElementById('guide-msg');
     const scaleBallContainer = document.getElementById('on-scale-ball-container');
 
-    // 🌟 드롭 위치(dropY)에 따른 엄격한 위치 조건 검증
+    // 🌟 요청사항 반영: 위치 조건 불일치 시 팝업(alert) 안내 실행
     function processDropEvent(type, dropY) {
         let isPlaced = false;
 
@@ -708,16 +706,16 @@
         } else if (step === 4) {
             if (type === 'ball-on-scale' || type === 'ball-anim-redo') {
                 const appRect = document.getElementById('apparatus-target').getBoundingClientRect();
-                const appMidY = appRect.top + appRect.height / 2; // 전환 장치의 중앙 높이 기준
+                const appMidY = appRect.top + appRect.height / 2; // 전환 장치의 세로 중앙 기준선
 
                 if (currentMode === 'ball-big') {
-                    // 🌟 1) 큰 쇠구슬(자유 낙하): 반드시 상단(중앙 높이 위쪽)으로 드래그해야만 작동
+                    // 🌟 1) 큰 쇠구슬: 상단(중앙 위쪽)이 아닌 아래쪽에 놓았을 때 팝업 안내
                     if (dropY && dropY > appMidY) {
                         alert("⚠️ 큰 쇠구슬은 역학적 에너지 전환 장치 '상단(위쪽)'으로 드래그해야 낙하합니다!");
                         return;
                     }
                 } else {
-                    // 🌟 2) 골프공(위로 던진 공): 반드시 하단 발사대 부근(중앙 높이 아래쪽)으로 드래그해야만 작동
+                    // 🌟 2) 골프공: 하단(중앙 아래쪽 발사대)이 아닌 위쪽에 놓았을 때 팝업 안내
                     if (dropY && dropY < appMidY) {
                         alert("⚠️ 골프공은 역학적 에너지 전환 장치 '하단(발사대 부근)'으로 드래그해야 발사됩니다!");
                         return;
@@ -793,7 +791,7 @@
         playRollingSound(mode);
 
         let startTime = null;
-        const duration = 700; // 0.7초 이동 속도
+        const duration = 700; // 0.7초 속도감 있는 운동
 
         if (mode === 'ball-big') {
             function animateDrop(timestamp) {
@@ -1088,6 +1086,7 @@
         `;
         calcTbody.innerHTML = calcHTML;
 
+        // 슬롯 안내 '카드 드래그' 표기
         let interpretHTML = '';
         if (mode === 'ball-big') {
             interpretHTML = `
@@ -1288,10 +1287,40 @@
             const ptKey = row.getAttribute('data-point');
             const target = pointTargets[ptKey];
 
+            // 🌟 [요청반영] 위치에너지 (m × g × h) 입력값 검증: 곱셈의 교환법칙에 따라 입력 순서에 무관하게 정답 처리
             const peInputs = row.querySelectorAll('.pe-m, .pe-g, .pe-h');
-            checkFieldMulti(peInputs[0], [...mKgCandidates, 9.8]);
-            checkFieldMulti(peInputs[1], [...mKgCandidates, 9.8]);
-            checkFieldMulti(peInputs[2], [target.h]);
+            const peUserVals = Array.from(peInputs).map(ip => parseFloat(ip.value));
+
+            // 허용되는 개별 유효 입력 수치 집합 (질량 후보들, 중력가속도 9.8, 해당 위치의 높이 h)
+            const allowedPeSet = [...mKgCandidates, 9.8, target.h];
+
+            let peOrderValid = true;
+            peUserVals.forEach((val, idx) => {
+                if (isNaN(val)) {
+                    peInputs[idx].classList.add('input-error');
+                    peOrderValid = false;
+                    allCorrect = false;
+                } else {
+                    const isMatched = allowedPeSet.some(cand => Math.abs(val - cand) <= 0.001);
+                    if (!isMatched) {
+                        peInputs[idx].classList.add('input-error');
+                        peOrderValid = false;
+                        allCorrect = false;
+                    } else {
+                        peInputs[idx].classList.remove('input-error');
+                    }
+                }
+            });
+
+            // 입력된 3개 수치의 곱이 실제 mgh 계산 결과와 일치하는지 최종 확인
+            if (peOrderValid) {
+                const userProduct = peUserVals[0] * peUserVals[1] * peUserVals[2];
+                const expectedProduct = currentConfig.massKg * 9.8 * target.h;
+                if (Math.abs(userProduct - expectedProduct) > 0.01) {
+                    peInputs.forEach(ip => ip.classList.add('input-error'));
+                    allCorrect = false;
+                }
+            }
 
             checkFieldMulti(row.querySelector('.ke-m'), mKgCandidates);
             checkFieldMulti(row.querySelector('.ke-v'), [target.v]);
