@@ -142,7 +142,7 @@
         .state-card { color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.12); touch-action: none; -webkit-user-drag: none; transition: transform 0.1s; }
         .state-card:active { cursor: grabbing; opacity: 0.8; transform: scale(0.95); }
         
-        /* 🎨 카드 그룹 색상 구분: [감소, 증가, 일정] = 파란색 / [위치, 운동] = 보라/자주색 */
+        /* 🎨 카드 그룹 색상 구분 */
         .card-type-change { background: #2563eb; border: 1px solid #1d4ed8; } 
         .card-type-energy { background: #7c3aed; border: 1px solid #6d28d9; } 
 
@@ -427,16 +427,16 @@
         osc.stop(audioCtx.currentTime + 0.08);
     }
 
-    // 🔊 🌟 [자연스럽고 가벼운 굴러가는 소리 구현] 1.2초 동안 매끄럽게 이어지는 노이즈 마찰음
+    // 🔊 🌟 [가볍고 자연스러운 굴러가는 소리 구현] 0.7초 동안 고주파 필터링으로 맑고 경쾌하게 재생
     function playRollingSound(mode) {
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
 
         const now = audioCtx.currentTime;
-        const duration = 1.2; // 애니메이션 이동 시간 1.2초 전체 재생
+        const duration = 0.7; // 단축된 공 이동 시간(0.7초)에 정확히 대치
 
-        // 1) 얇고 경쾌한 마찰 노이즈 생성
+        // 1) 얇고 가벼운 노이즈 합성
         const bufferSize = audioCtx.sampleRate * duration;
         const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
@@ -447,30 +447,30 @@
         const whiteNoise = audioCtx.createBufferSource();
         whiteNoise.buffer = noiseBuffer;
 
-        // 2) 밴드패스 필터를 이용한 가벼운 톤 조정 (400Hz ~ 1200Hz 상향)
+        // 2) 고주파 중심의 밴드패스 필터로 가벼운 마찰음 연출 (800Hz ~ 2400Hz)
         const noiseFilter = audioCtx.createBiquadFilter();
         noiseFilter.type = 'bandpass';
-        noiseFilter.Q.value = 3.0; // 또렷한 회전 진동감 부여
+        noiseFilter.Q.value = 2.5;
 
         const gainNode = audioCtx.createGain();
 
         if (mode === 'ball-big') {
-            // 자유 낙하 (쇠구슬): 자연스러운 가속 연출
-            noiseFilter.frequency.setValueAtTime(450, now);
-            noiseFilter.frequency.exponentialRampToValueAtTime(950, now + duration);
+            // 자유 낙하 (쇠구슬): 가볍게 시작해서 속도가 빨라지며 선명해짐
+            noiseFilter.frequency.setValueAtTime(800, now);
+            noiseFilter.frequency.exponentialRampToValueAtTime(2400, now + duration);
 
             gainNode.gain.setValueAtTime(0.01, now);
-            gainNode.gain.linearRampToValueAtTime(0.12, now + 0.15);
-            gainNode.gain.setValueAtTime(0.12, now + duration - 0.1);
+            gainNode.gain.linearRampToValueAtTime(0.12, now + 0.1);
+            gainNode.gain.setValueAtTime(0.12, now + duration - 0.08);
             gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
         } else {
-            // 위로 던진 공 (골프공): 가볍게 올라가면서 자연스러운 감쇄 연출
-            noiseFilter.frequency.setValueAtTime(800, now);
-            noiseFilter.frequency.exponentialRampToValueAtTime(350, now + duration);
+            // 위로 던진 공 (골프공): 가볍게 발사되어 최고점에서 살포시 꺼짐
+            noiseFilter.frequency.setValueAtTime(2000, now);
+            noiseFilter.frequency.exponentialRampToValueAtTime(700, now + duration);
 
             gainNode.gain.setValueAtTime(0.01, now);
-            gainNode.gain.linearRampToValueAtTime(0.10, now + 0.1);
-            gainNode.gain.setValueAtTime(0.08, now + duration - 0.2);
+            gainNode.gain.linearRampToValueAtTime(0.10, now + 0.08);
+            gainNode.gain.setValueAtTime(0.08, now + duration - 0.1);
             gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
         }
 
@@ -774,11 +774,12 @@
         ball.className = 'ball-drop ' + (mode === 'ball-big' ? 'ball-big-style' : 'ball-golf-style');
         ball.style.display = 'block';
 
-        // 🔊 공이 움직이기 시작할 때 1.2초 동안 연속 가벼운 굴러가는 소리 재생
+        // 🔊 공이 굴러가는 0.7초 동안 경쾌하고 가벼운 효과음 연속 재생
         playRollingSound(mode);
 
         let startTime = null;
-        const duration = 1200; 
+        // ⚡ [요청반영] 이동 시간을 기존 1200ms에서 700ms로 단축하여 한층 빠른 운동감 구현
+        const duration = 700; 
 
         if (mode === 'ball-big') {
             function animateDrop(timestamp) {
