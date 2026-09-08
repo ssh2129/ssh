@@ -93,7 +93,7 @@
         .sensor-top { top: 90px; }
         .sensor-bottom { top: 200px; }
         
-        .ball-drop { background: radial-gradient(circle at 30% 30%, #ffffff, #64748b, #0f172a); border-radius: 50%; position: absolute; display: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        .ball-drop { background: radial-gradient(circle at 30% 30%, #ffffff, #64748b, #0f172a); border-radius: 50%; position: absolute; display: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.4); cursor: grab; }
         .ball-big-style { width: 22px; height: 22px; left: 2px; }
         .ball-golf-style { width: 20px; height: 20px; left: 3px; background: radial-gradient(circle at 30% 30%, #ffffff, #e2e8f0, #94a3b8); border: 1px solid #cbd5e1; }
 
@@ -142,7 +142,6 @@
         .state-card { color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.12); touch-action: none; -webkit-user-drag: none; transition: transform 0.1s; }
         .state-card:active { cursor: grabbing; opacity: 0.8; transform: scale(0.95); }
         
-        /* 🎨 카드 그룹 색상 구분 */
         .card-type-change { background: #2563eb; border: 1px solid #1d4ed8; } 
         .card-type-energy { background: #7c3aed; border: 1px solid #6d28d9; } 
 
@@ -274,7 +273,8 @@
                     <div id="sensor-top-target" class="sensor sensor-top" style="display:none;">속력측정기(상)</div>
                     <div id="sensor-bottom-target" class="sensor sensor-bottom" style="display:none;">속력측정기(하)</div>
                     <div id="launcher-el" class="launcher">발사대</div>
-                    <div id="ball-anim" class="ball-drop"></div>
+                    <!-- 🌟 멈춰있는 공을 다시 드래그할 수 있도록 data-type 속성을 추가한 애니메이션 볼 -->
+                    <div id="ball-anim" class="ball-drop" data-type="ball-anim-redo"></div>
                 </div>
             </div>
         </div>
@@ -391,7 +391,6 @@
     // 🎵 Web Audio API 효과음
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    // 드래그 시작 시 '똑' 소리
     function playDragSound() {
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
@@ -409,7 +408,6 @@
         osc.stop(audioCtx.currentTime + 0.05);
     }
 
-    // 카드/기구 배치 시 '착!' 소리
     function playDropSound() {
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
@@ -427,16 +425,15 @@
         osc.stop(audioCtx.currentTime + 0.08);
     }
 
-    // 🔊 🌟 [가볍고 자연스러운 굴러가는 소리 구현] 0.7초 동안 고주파 필터링으로 맑고 경쾌하게 재생
+    // 🔊 가볍고 연속적인 굴러가는 소리 연출 (0.7초)
     function playRollingSound(mode) {
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
 
         const now = audioCtx.currentTime;
-        const duration = 0.7; // 단축된 공 이동 시간(0.7초)에 정확히 대치
+        const duration = 0.7; 
 
-        // 1) 얇고 가벼운 노이즈 합성
         const bufferSize = audioCtx.sampleRate * duration;
         const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
@@ -447,7 +444,6 @@
         const whiteNoise = audioCtx.createBufferSource();
         whiteNoise.buffer = noiseBuffer;
 
-        // 2) 고주파 중심의 밴드패스 필터로 가벼운 마찰음 연출 (800Hz ~ 2400Hz)
         const noiseFilter = audioCtx.createBiquadFilter();
         noiseFilter.type = 'bandpass';
         noiseFilter.Q.value = 2.5;
@@ -455,7 +451,6 @@
         const gainNode = audioCtx.createGain();
 
         if (mode === 'ball-big') {
-            // 자유 낙하 (쇠구슬): 가볍게 시작해서 속도가 빨라지며 선명해짐
             noiseFilter.frequency.setValueAtTime(800, now);
             noiseFilter.frequency.exponentialRampToValueAtTime(2400, now + duration);
 
@@ -464,7 +459,6 @@
             gainNode.gain.setValueAtTime(0.12, now + duration - 0.08);
             gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
         } else {
-            // 위로 던진 공 (골프공): 가볍게 발사되어 최고점에서 살포시 꺼짐
             noiseFilter.frequency.setValueAtTime(2000, now);
             noiseFilter.frequency.exponentialRampToValueAtTime(700, now + duration);
 
@@ -606,7 +600,7 @@
     }
 
     function attachUniversalDragListeners() {
-        document.querySelectorAll('.draggable, .on-scale-ball, .state-card').forEach(el => {
+        document.querySelectorAll('.draggable, .on-scale-ball, .state-card, #ball-anim').forEach(el => {
             makeElementDraggable(el);
         });
 
@@ -710,11 +704,13 @@
                 }
             }
         } else if (step === 4) {
-            if (type === 'ball-on-scale') {
+            // 🌟 최초 4단계 낙하/발사 또는 멈춰있는 공 재드래그(ball-anim-redo) 처리
+            if (type === 'ball-on-scale' || type === 'ball-anim-redo') {
                 scaleBallContainer.innerHTML = '';
                 isPlaced = true;
                 runAnimation(currentMode, currentConfig.v1, currentConfig.v2, () => {
-                    guideMsg.innerText = "실험이 완료되었습니다. 아래 데이터 기록, 처리, 해석 표를 입력하세요.";
+                    const name = currentMode === 'ball-big' ? '큰 쇠구슬' : '골프공';
+                    guideMsg.innerText = `실험이 완료되었습니다. 멈춰있는 ${name}을(를) 다시 드래그하여 실험을 재실행할 수 있습니다.`;
                     setFocusBox('box-record');
                 });
             }
@@ -774,12 +770,11 @@
         ball.className = 'ball-drop ' + (mode === 'ball-big' ? 'ball-big-style' : 'ball-golf-style');
         ball.style.display = 'block';
 
-        // 🔊 공이 굴러가는 0.7초 동안 경쾌하고 가벼운 효과음 연속 재생
+        // 🔊 굴러가는 소리 재생
         playRollingSound(mode);
 
         let startTime = null;
-        // ⚡ [요청반영] 이동 시간을 기존 1200ms에서 700ms로 단축하여 한층 빠른 운동감 구현
-        const duration = 700; 
+        const duration = 700; // 0.7초 속도감 있는 애니메이션
 
         if (mode === 'ball-big') {
             function animateDrop(timestamp) {
