@@ -142,6 +142,7 @@
         .state-card { color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.12); touch-action: none; -webkit-user-drag: none; transition: transform 0.1s; }
         .state-card:active { cursor: grabbing; opacity: 0.8; transform: scale(0.95); }
         
+        /* 🎨 카드 그룹 색상 구분 */
         .card-type-change { background: #2563eb; border: 1px solid #1d4ed8; } 
         .card-type-energy { background: #7c3aed; border: 1px solid #6d28d9; } 
 
@@ -273,7 +274,6 @@
                     <div id="sensor-top-target" class="sensor sensor-top" style="display:none;">속력측정기(상)</div>
                     <div id="sensor-bottom-target" class="sensor sensor-bottom" style="display:none;">속력측정기(하)</div>
                     <div id="launcher-el" class="launcher">발사대</div>
-                    <!-- 🌟 멈춰있는 공을 다시 드래그할 수 있도록 data-type 속성을 추가한 애니메이션 볼 -->
                     <div id="ball-anim" class="ball-drop" data-type="ball-anim-redo"></div>
                 </div>
             </div>
@@ -425,7 +425,7 @@
         osc.stop(audioCtx.currentTime + 0.08);
     }
 
-    // 🔊 가볍고 연속적인 굴러가는 소리 연출 (0.7초)
+    // 🔊 맑고 가벼운 굴러가는 소리 (0.7초)
     function playRollingSound(mode) {
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
@@ -580,7 +580,8 @@
                 if (dropTarget) {
                     const dropZoneEl = dropTarget.closest('#drop-zone');
                     if (dropZoneEl && draggedType) {
-                        processDropEvent(draggedType);
+                        // 🌟 위치 좌표(clientY)를 함께 전달하여 위치 조건 판단
+                        processDropEvent(draggedType, upEvt.clientY);
                     }
 
                     const slot = dropTarget.closest('.drop-card-slot');
@@ -610,7 +611,7 @@
             dropZone.addEventListener('dragover', (e) => e.preventDefault());
             dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
-                if (draggedType) processDropEvent(draggedType);
+                if (draggedType) processDropEvent(draggedType, e.clientY);
             });
         }
 
@@ -650,7 +651,8 @@
     const guideMsg = document.getElementById('guide-msg');
     const scaleBallContainer = document.getElementById('on-scale-ball-container');
 
-    function processDropEvent(type) {
+    // 🌟 드롭 위치(dropY)에 따른 엄격한 위치 조건 검증
+    function processDropEvent(type, dropY) {
         let isPlaced = false;
 
         if (step === 1) {
@@ -698,19 +700,36 @@
                 step = 4;
                 const name = currentMode === 'ball-big' ? '큰 쇠구슬' : '골프공';
                 if (currentMode === 'ball-big') {
-                    guideMsg.innerText = `4단계: 저울 위의 ${name}을(를) 드래그하여 역학적 에너지 전환 장치 상단에 떨어뜨리세요.`;
+                    guideMsg.innerText = `4단계: 저울 위의 ${name}을(를) 드래그하여 역학적 에너지 전환 장치 상단(위쪽)에 떨어뜨리세요.`;
                 } else {
                     guideMsg.innerText = `4단계: 저울 위의 ${name}을(를) 드래그하여 역학적 에너지 전환 장치 하단(발사대)에 올리세요.`;
                 }
             }
         } else if (step === 4) {
-            // 🌟 최초 4단계 낙하/발사 또는 멈춰있는 공 재드래그(ball-anim-redo) 처리
             if (type === 'ball-on-scale' || type === 'ball-anim-redo') {
+                const appRect = document.getElementById('apparatus-target').getBoundingClientRect();
+                const appMidY = appRect.top + appRect.height / 2; // 전환 장치의 중앙 높이 기준
+
+                if (currentMode === 'ball-big') {
+                    // 🌟 1) 큰 쇠구슬(자유 낙하): 반드시 상단(중앙 높이 위쪽)으로 드래그해야만 작동
+                    if (dropY && dropY > appMidY) {
+                        alert("⚠️ 큰 쇠구슬은 역학적 에너지 전환 장치 '상단(위쪽)'으로 드래그해야 낙하합니다!");
+                        return;
+                    }
+                } else {
+                    // 🌟 2) 골프공(위로 던진 공): 반드시 하단 발사대 부근(중앙 높이 아래쪽)으로 드래그해야만 작동
+                    if (dropY && dropY < appMidY) {
+                        alert("⚠️ 골프공은 역학적 에너지 전환 장치 '하단(발사대 부근)'으로 드래그해야 발사됩니다!");
+                        return;
+                    }
+                }
+
                 scaleBallContainer.innerHTML = '';
                 isPlaced = true;
                 runAnimation(currentMode, currentConfig.v1, currentConfig.v2, () => {
                     const name = currentMode === 'ball-big' ? '큰 쇠구슬' : '골프공';
-                    guideMsg.innerText = `실험이 완료되었습니다. 멈춰있는 ${name}을(를) 다시 드래그하여 실험을 재실행할 수 있습니다.`;
+                    const targetPos = currentMode === 'ball-big' ? '상단(위쪽)' : '하단(발사대)';
+                    guideMsg.innerText = `실험이 완료되었습니다. 멈춰있는 ${name}을(를) 다시 집어서 ${targetPos}에 넣으면 재실행됩니다.`;
                     setFocusBox('box-record');
                 });
             }
@@ -774,7 +793,7 @@
         playRollingSound(mode);
 
         let startTime = null;
-        const duration = 700; // 0.7초 속도감 있는 애니메이션
+        const duration = 700; // 0.7초 이동 속도
 
         if (mode === 'ball-big') {
             function animateDrop(timestamp) {
@@ -1069,7 +1088,6 @@
         `;
         calcTbody.innerHTML = calcHTML;
 
-        // 슬롯 안내 '카드 드래그' 표기
         let interpretHTML = '';
         if (mode === 'ball-big') {
             interpretHTML = `
