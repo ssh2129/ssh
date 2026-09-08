@@ -427,16 +427,16 @@
         osc.stop(audioCtx.currentTime + 0.08);
     }
 
-    // 🔊 [새로 개선된 굴러가는 효과음] 공이 관을 따라 1.2초 동안 연속적으로 데굴데굴 굴러가는 소리
+    // 🔊 🌟 [자연스럽고 가벼운 굴러가는 소리 구현] 1.2초 동안 매끄럽게 이어지는 노이즈 마찰음
     function playRollingSound(mode) {
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
 
         const now = audioCtx.currentTime;
-        const duration = 1.2; // 애니메이션 구동 시간 1.2초 전체 재생
+        const duration = 1.2; // 애니메이션 이동 시간 1.2초 전체 재생
 
-        // 1) 마찰 노이즈 필터링
+        // 1) 얇고 경쾌한 마찰 노이즈 생성
         const bufferSize = audioCtx.sampleRate * duration;
         const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
@@ -447,52 +447,39 @@
         const whiteNoise = audioCtx.createBufferSource();
         whiteNoise.buffer = noiseBuffer;
 
+        // 2) 밴드패스 필터를 이용한 가벼운 톤 조정 (400Hz ~ 1200Hz 상향)
         const noiseFilter = audioCtx.createBiquadFilter();
         noiseFilter.type = 'bandpass';
-        
-        // 2) 회전 진동음 (저음 오실레이터)
-        const osc = audioCtx.createOscillator();
-        osc.type = 'sine';
+        noiseFilter.Q.value = 3.0; // 또렷한 회전 진동감 부여
 
         const gainNode = audioCtx.createGain();
 
         if (mode === 'ball-big') {
-            // 자유 낙하 (쇠구슬): 내려가면서 속도가 빨라져 톤이 상승
-            noiseFilter.frequency.setValueAtTime(180, now);
-            noiseFilter.frequency.exponentialRampToValueAtTime(450, now + duration);
-
-            osc.frequency.setValueAtTime(80, now);
-            osc.frequency.exponentialRampToValueAtTime(160, now + duration);
+            // 자유 낙하 (쇠구슬): 자연스러운 가속 연출
+            noiseFilter.frequency.setValueAtTime(450, now);
+            noiseFilter.frequency.exponentialRampToValueAtTime(950, now + duration);
 
             gainNode.gain.setValueAtTime(0.01, now);
-            gainNode.gain.linearRampToValueAtTime(0.2, now + 0.2);
-            gainNode.gain.setValueAtTime(0.2, now + duration - 0.1);
+            gainNode.gain.linearRampToValueAtTime(0.12, now + 0.15);
+            gainNode.gain.setValueAtTime(0.12, now + duration - 0.1);
             gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
         } else {
-            // 위로 던진 공 (골프공): 상승하며 감속되어 톤이 약해짐
-            noiseFilter.frequency.setValueAtTime(400, now);
-            noiseFilter.frequency.exponentialRampToValueAtTime(150, now + duration);
-
-            osc.frequency.setValueAtTime(150, now);
-            osc.frequency.exponentialRampToValueAtTime(70, now + duration);
+            // 위로 던진 공 (골프공): 가볍게 올라가면서 자연스러운 감쇄 연출
+            noiseFilter.frequency.setValueAtTime(800, now);
+            noiseFilter.frequency.exponentialRampToValueAtTime(350, now + duration);
 
             gainNode.gain.setValueAtTime(0.01, now);
-            gainNode.gain.linearRampToValueAtTime(0.22, now + 0.15);
-            gainNode.gain.setValueAtTime(0.18, now + duration - 0.2);
+            gainNode.gain.linearRampToValueAtTime(0.10, now + 0.1);
+            gainNode.gain.setValueAtTime(0.08, now + duration - 0.2);
             gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
         }
 
         whiteNoise.connect(noiseFilter);
         noiseFilter.connect(gainNode);
-
-        osc.connect(gainNode);
         gainNode.connect(audioCtx.destination);
 
         whiteNoise.start(now);
-        osc.start(now);
-
         whiteNoise.stop(now + duration);
-        osc.stop(now + duration);
     }
 
     // 🚫 스크롤 숫값 변화 방지
@@ -787,7 +774,7 @@
         ball.className = 'ball-drop ' + (mode === 'ball-big' ? 'ball-big-style' : 'ball-golf-style');
         ball.style.display = 'block';
 
-        // 🔊 공이 1.2초 동안 데굴데굴 굴러가는 소리 재생
+        // 🔊 공이 움직이기 시작할 때 1.2초 동안 연속 가벼운 굴러가는 소리 재생
         playRollingSound(mode);
 
         let startTime = null;
@@ -1086,7 +1073,7 @@
         `;
         calcTbody.innerHTML = calcHTML;
 
-        // 슬롯 안의 안내 텍스트 '카드 드래그' 표기
+        // 슬롯 안내 '카드 드래그' 표기
         let interpretHTML = '';
         if (mode === 'ball-big') {
             interpretHTML = `
