@@ -388,7 +388,7 @@
         v2: 3.96
     };
 
-    // 🎵 Web Audio API 기반 오디오 시스템
+    // 🎵 Web Audio API 효과음
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     // 드래그 시작 시 '똑' 소리
@@ -427,16 +427,16 @@
         osc.stop(audioCtx.currentTime + 0.08);
     }
 
-    // 🎵 🔊 [새로 구현된 굴러가는 효과음] 공이 관을 따라 1.2초 동안 데굴데굴 굴러가는 오디오 합성
+    // 🔊 [새로 개선된 굴러가는 효과음] 공이 관을 따라 1.2초 동안 연속적으로 데굴데굴 굴러가는 소리
     function playRollingSound(mode) {
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
 
         const now = audioCtx.currentTime;
-        const duration = 1.2; // 애니메이션 구동 시간과 완벽히 동일 (1.2초)
+        const duration = 1.2; // 애니메이션 구동 시간 1.2초 전체 재생
 
-        // 1) 굴러가는 노이즈 필터링 (관 내부 마찰음 연출)
+        // 1) 마찰 노이즈 필터링
         const bufferSize = audioCtx.sampleRate * duration;
         const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
@@ -450,14 +450,14 @@
         const noiseFilter = audioCtx.createBiquadFilter();
         noiseFilter.type = 'bandpass';
         
-        // 2) 데굴데굴 저음 진동 오실레이터 (공의 회전음 연출)
+        // 2) 회전 진동음 (저음 오실레이터)
         const osc = audioCtx.createOscillator();
         osc.type = 'sine';
 
         const gainNode = audioCtx.createGain();
 
         if (mode === 'ball-big') {
-            // 자유 낙하 (쇠구슬): 내려가면서 속도가 증가하여 굴러가는 톤이 커짐
+            // 자유 낙하 (쇠구슬): 내려가면서 속도가 빨라져 톤이 상승
             noiseFilter.frequency.setValueAtTime(180, now);
             noiseFilter.frequency.exponentialRampToValueAtTime(450, now + duration);
 
@@ -469,7 +469,7 @@
             gainNode.gain.setValueAtTime(0.2, now + duration - 0.1);
             gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
         } else {
-            // 위로 던진 공 (골프공): 위로 솟구치며 속도가 감속되어 굴러가는 톤이 낮아짐
+            // 위로 던진 공 (골프공): 상승하며 감속되어 톤이 약해짐
             noiseFilter.frequency.setValueAtTime(400, now);
             noiseFilter.frequency.exponentialRampToValueAtTime(150, now + duration);
 
@@ -725,6 +725,7 @@
         } else if (step === 4) {
             if (type === 'ball-on-scale') {
                 scaleBallContainer.innerHTML = '';
+                isPlaced = true;
                 runAnimation(currentMode, currentConfig.v1, currentConfig.v2, () => {
                     guideMsg.innerText = "실험이 완료되었습니다. 아래 데이터 기록, 처리, 해석 표를 입력하세요.";
                     setFocusBox('box-record');
@@ -786,7 +787,7 @@
         ball.className = 'ball-drop ' + (mode === 'ball-big' ? 'ball-big-style' : 'ball-golf-style');
         ball.style.display = 'block';
 
-        // 🔊 공이 움직이는 1.2초 동안 '데굴데굴' 굴러가는 소리 재생 시작
+        // 🔊 공이 1.2초 동안 데굴데굴 굴러가는 소리 재생
         playRollingSound(mode);
 
         let startTime = null;
