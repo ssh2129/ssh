@@ -131,18 +131,18 @@
         .fraction .num { border-bottom: 1px solid #000; padding-bottom: 1px; }
         .fraction .den { padding-top: 1px; }
 
-        /* 🌟 하단 카드 표 구조 스타일 (요청사항 반영) */
+        /* 🌟 맨 아래 카드 분리 표(Table) 스타일 */
         .card-table-wrapper { margin-top: 15px; margin-bottom: 5px; width: 100%; display: flex; justify-content: center; }
-        .card-table { width: auto; max-width: 650px; border-collapse: collapse; border: 2px solid #cbd5e1; background: #f8fafc; }
+        .card-table { width: auto; min-width: 580px; border-collapse: collapse; border: 2px solid #cbd5e1; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .card-table td { padding: 8px 12px; vertical-align: middle; }
-        .card-header-cell { background: #e2e8f0; font-weight: bold; color: #1e293b; font-size: 13px; width: 80px; border-right: 2px solid #cbd5e1; }
+        .card-header-cell { background: #e2e8f0; font-weight: bold; color: #1e293b; font-size: 13px; width: 80px; border-right: 2px solid #cbd5e1; text-align: center; }
         
         .card-group-flex { display: flex; justify-content: center; gap: 10px; align-items: center; }
         
         .state-card { color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.12); touch-action: none; -webkit-user-drag: none; transition: transform 0.1s; }
         .state-card:active { cursor: grabbing; opacity: 0.8; transform: scale(0.95); }
         
-        /* 🎨 그룹별 색상 구분: [감소, 증가, 일정] = 파란색 / [위치, 운동] = 보라/자주색 */
+        /* 🎨 카드 그룹 색상 구분: [감소, 증가, 일정] = 파란색 / [위치, 운동] = 보라/자주색 */
         .card-type-change { background: #2563eb; border: 1px solid #1d4ed8; } 
         .card-type-energy { background: #7c3aed; border: 1px solid #6d28d9; } 
 
@@ -343,7 +343,7 @@
             </tbody>
         </table>
 
-        <!-- 🌟 요청사항 반영: 표 형태로 분리된 하단 카드 영역 -->
+        <!-- 🌟 요청사항 반영: 표(Table) 형태 카드 구분 [카드 | 감소, 증가, 일정 | 위치, 운동] -->
         <div class="card-table-wrapper">
             <table class="card-table">
                 <tr>
@@ -1013,7 +1013,7 @@
         `;
         calcTbody.innerHTML = calcHTML;
 
-        // 🌟 슬롯 내부 텍스트를 명확히 '카드'로 표시
+        // 🌟 요청사항 반영: 슬롯 안의 안내 텍스트를 '드래그'로 완벽 변경
         let interpretHTML = '';
         if (mode === 'ball-big') {
             interpretHTML = `
@@ -1024,7 +1024,7 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="pe_oa">카드</div>
+                            <div class="drop-card-slot" data-slot="pe_oa">드래그</div>
                         </div>
                     </td>
                     <td>
@@ -1032,12 +1032,12 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="ke_oa">카드</div>
+                            <div class="drop-card-slot" data-slot="ke_oa">드래그</div>
                         </div>
                     </td>
                     <td>
                         <div class="formula-cell">
-                            <div class="drop-card-slot" data-slot="me_oa">카드</div>
+                            <div class="drop-card-slot" data-slot="me_oa">드래그</div>
                         </div>
                     </td>
                 </tr>
@@ -1048,7 +1048,7 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="pe_ab">카드</div>
+                            <div class="drop-card-slot" data-slot="pe_ab">드래그</div>
                         </div>
                     </td>
                     <td>
@@ -1056,12 +1056,12 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="ke_ab">카드</div>
+                            <div class="drop-card-slot" data-slot="ke_ab">드래그</div>
                         </div>
                     </td>
                     <td>
                         <div class="formula-cell">
-                            <div class="drop-card-slot" data-slot="me_ab">카드</div>
+                            <div class="drop-card-slot" data-slot="me_ab">드래그</div>
                         </div>
                     </td>
                 </tr>
@@ -1070,15 +1070,15 @@
                     <td><b>역학적 에너지 전환</b></td>
                     <td colspan="2" style="text-align: left; padding-left: 15px;">
                         자유 낙하 하는 물체는 
-                        (<div class="drop-card-slot" data-slot="c_trans1">카드</div>) 에너지가 
-                        (<div class="drop-card-slot" data-slot="c_trans2">카드</div>) 에너지로 전환된다.
+                        (<div class="drop-card-slot" data-slot="c_trans1">드래그</div>) 에너지가 
+                        (<div class="drop-card-slot" data-slot="c_trans2">드래그</div>) 에너지로 전환된다.
                     </td>
                 </tr>
                 <tr>
                     <td><b>역학적 에너지 보존</b></td>
                     <td colspan="2" style="text-align: left; padding-left: 15px;">
                         모든 구간에서 역학적 에너지는 
-                        (<div class="drop-card-slot" data-slot="c_cons">카드</div>) 하다.
+                        (<div class="drop-card-slot" data-slot="c_cons">드래그</div>) 하다.
                     </td>
                 </tr>
             `;
@@ -1091,7 +1091,7 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="pe_ba">카드</div>
+                            <div class="drop-card-slot" data-slot="pe_ba">드래그</div>
                         </div>
                     </td>
                     <td>
@@ -1099,12 +1099,12 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="ke_ba">카드</div>
+                            <div class="drop-card-slot" data-slot="ke_ba">드래그</div>
                         </div>
                     </td>
                     <td>
                         <div class="formula-cell">
-                            <div class="drop-card-slot" data-slot="me_ba">카드</div>
+                            <div class="drop-card-slot" data-slot="me_ba">드래그</div>
                         </div>
                     </td>
                 </tr>
@@ -1115,7 +1115,7 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="pe_ao">카드</div>
+                            <div class="drop-card-slot" data-slot="pe_ao">드래그</div>
                         </div>
                     </td>
                     <td>
@@ -1123,12 +1123,12 @@
                             <input type="number" step="any" class="direct-input sub-v1" oninput="calcDiff(this)"> - 
                             <input type="number" step="any" class="direct-input sub-v2" oninput="calcDiff(this)"> = 
                             <input type="text" class="result-field diff-res" readonly>
-                            <div class="drop-card-slot" data-slot="ke_ao">카드</div>
+                            <div class="drop-card-slot" data-slot="ke_ao">드래그</div>
                         </div>
                     </td>
                     <td>
                         <div class="formula-cell">
-                            <div class="drop-card-slot" data-slot="me_ao">카드</div>
+                            <div class="drop-card-slot" data-slot="me_ao">드래그</div>
                         </div>
                     </td>
                 </tr>
@@ -1137,15 +1137,15 @@
                     <td><b>역학적 에너지 전환</b></td>
                     <td colspan="2" style="text-align: left; padding-left: 15px;">
                         위로 던져 올려진 물체는 
-                        (<div class="drop-card-slot" data-slot="c_trans1">카드</div>) 에너지가 
-                        (<div class="drop-card-slot" data-slot="c_trans2">카드</div>) 에너지로 전환된다.
+                        (<div class="drop-card-slot" data-slot="c_trans1">드래그</div>) 에너지가 
+                        (<div class="drop-card-slot" data-slot="c_trans2">드래그</div>) 에너지로 전환된다.
                     </td>
                 </tr>
                 <tr>
                     <td><b>역학적 에너지 보존</b></td>
                     <td colspan="2" style="text-align: left; padding-left: 15px;">
                         모든 구간에서 역학적 에너지는 
-                        (<div class="drop-card-slot" data-slot="c_cons">카드</div>) 하다.
+                        (<div class="drop-card-slot" data-slot="c_cons">드래그</div>) 하다.
                     </td>
                 </tr>
             `;
@@ -1227,7 +1227,7 @@
             checkFieldMulti(meRes, [expectedME]);
         });
 
-        // 3. 데이터 해석 검증 (🌟 큰 쇠구슬 및 골프공 모두 역학적 에너지 변화: '일정'으로 검증)
+        // 3. 데이터 해석 검증
         if (currentMode === 'ball-big') {
             const rowOA = document.querySelector('tr[data-section="OA"]');
             const rowAB = document.querySelector('tr[data-section="AB"]');
@@ -1242,7 +1242,6 @@
             checkFieldMulti(keOA_inputs[1], [0, 0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2)]);
             checkSlotCard(rowOA.querySelector('[data-slot="ke_oa"]'), '증가');
 
-            // 🌟 역학적 에너지 변화 -> '일정'
             checkSlotCard(rowOA.querySelector('[data-slot="me_oa"]'), '일정');
 
             const peAB_inputs = rowAB.cells[1].querySelectorAll('.direct-input');
@@ -1255,7 +1254,6 @@
             checkFieldMulti(keAB_inputs[1], [0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2), 0.5 * currentConfig.massKg * Math.pow(currentConfig.v2, 2)]);
             checkSlotCard(rowAB.querySelector('[data-slot="ke_ab"]'), '증가');
 
-            // 🌟 역학적 에너지 변화 -> '일정'
             checkSlotCard(rowAB.querySelector('[data-slot="me_ab"]'), '일정');
 
             checkSlotCard(document.querySelector('[data-slot="c_trans1"]'), '위치');
@@ -1275,7 +1273,6 @@
             checkFieldMulti(keBA_inputs[1], [0.5 * currentConfig.massKg * Math.pow(currentConfig.v2, 2), 0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2)]);
             checkSlotCard(rowBA.querySelector('[data-slot="ke_ba"]'), '감소');
 
-            // 🌟 역학적 에너지 변화 -> '일정'
             checkSlotCard(rowBA.querySelector('[data-slot="me_ba"]'), '일정');
 
             const peAO_inputs = rowAO.cells[1].querySelectorAll('.direct-input');
@@ -1288,7 +1285,6 @@
             checkFieldMulti(keAO_inputs[1], [0.5 * currentConfig.massKg * Math.pow(currentConfig.v1, 2), 0]);
             checkSlotCard(rowAO.querySelector('[data-slot="ke_ao"]'), '감소');
 
-            // 🌟 역학적 에너지 변화 -> '일정'
             checkSlotCard(rowAO.querySelector('[data-slot="me_ao"]'), '일정');
 
             checkSlotCard(document.querySelector('[data-slot="c_trans1"]'), '운동');
@@ -1414,7 +1410,7 @@
         });
 
         document.querySelectorAll('.drop-card-slot').forEach(slot => {
-            slot.innerText = '카드';
+            slot.innerText = '드래그';
             slot.classList.remove('has-card', 'input-error');
         });
 
