@@ -131,15 +131,18 @@
         .fraction .num { border-bottom: 1px solid #000; padding-bottom: 1px; }
         .fraction .den { padding-top: 1px; }
 
-        /* 🌟 카드 드래그 앤 드롭 영역 및 색상 구분 스타일 */
-        .card-container { display: flex; justify-content: center; align-items: center; margin-top: 12px; margin-bottom: 5px; flex-wrap: wrap; }
-        .card-group { display: flex; gap: 8px; align-items: center; }
-        .card-separator { width: 2px; height: 22px; background-color: #cbd5e1; margin: 0 15px; border-radius: 1px; }
+        /* 🌟 하단 카드 표 구조 스타일 (요청사항 반영) */
+        .card-table-wrapper { margin-top: 15px; margin-bottom: 5px; width: 100%; display: flex; justify-content: center; }
+        .card-table { width: auto; max-width: 650px; border-collapse: collapse; border: 2px solid #cbd5e1; background: #f8fafc; }
+        .card-table td { padding: 8px 12px; vertical-align: middle; }
+        .card-header-cell { background: #e2e8f0; font-weight: bold; color: #1e293b; font-size: 13px; width: 80px; border-right: 2px solid #cbd5e1; }
         
-        .state-card { color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.12); touch-action: none; -webkit-user-drag: none; transition: transform 0.1s; }
+        .card-group-flex { display: flex; justify-content: center; gap: 10px; align-items: center; }
+        
+        .state-card { color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: grab; box-shadow: 0 2px 4px rgba(0,0,0,0.12); touch-action: none; -webkit-user-drag: none; transition: transform 0.1s; }
         .state-card:active { cursor: grabbing; opacity: 0.8; transform: scale(0.95); }
         
-        /* 🎨 상태/변화 카드 (파란색) vs 에너지 종류 카드 (보라/자주색) 구분 */
+        /* 🎨 그룹별 색상 구분: [감소, 증가, 일정] = 파란색 / [위치, 운동] = 보라/자주색 */
         .card-type-change { background: #2563eb; border: 1px solid #1d4ed8; } 
         .card-type-energy { background: #7c3aed; border: 1px solid #6d28d9; } 
 
@@ -340,21 +343,27 @@
             </tbody>
         </table>
 
-        <!-- 🌟 요청사항 반영: 카드 구분 및 색상 차별화 영역 -->
-        <div class="card-container">
-            <!-- 변화 상태 카드 그룹 (파란색) -->
-            <div class="card-group">
-                <div class="state-card card-type-change" draggable="true" data-card-val="감소">감소</div>
-                <div class="state-card card-type-change" draggable="true" data-card-val="증가">증가</div>
-                <div class="state-card card-type-change" draggable="true" data-card-val="일정">일정</div>
-            </div>
-            <!-- 수직 구분선 -->
-            <div class="card-separator"></div>
-            <!-- 에너지 종류 카드 그룹 (보라/자주색) -->
-            <div class="card-group">
-                <div class="state-card card-type-energy" draggable="true" data-card-val="위치">위치</div>
-                <div class="state-card card-type-energy" draggable="true" data-card-val="운동">운동</div>
-            </div>
+        <!-- 🌟 요청사항 반영: 표 형태로 분리된 하단 카드 영역 -->
+        <div class="card-table-wrapper">
+            <table class="card-table">
+                <tr>
+                    <td class="card-header-cell">카드</td>
+                    <td>
+                        <div class="card-group-flex">
+                            <div class="state-card card-type-change" draggable="true" data-card-val="감소">감소</div>
+                            <div class="state-card card-type-change" draggable="true" data-card-val="증가">증가</div>
+                            <div class="state-card card-type-change" draggable="true" data-card-val="일정">일정</div>
+                        </div>
+                    </td>
+                    <td style="width: 2px; padding: 0; background: #cbd5e1;"></td>
+                    <td>
+                        <div class="card-group-flex">
+                            <div class="state-card card-type-energy" draggable="true" data-card-val="위치">위치</div>
+                            <div class="state-card card-type-energy" draggable="true" data-card-val="운동">운동</div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
         </div>
 
         <div class="btn-group">
@@ -379,7 +388,7 @@
         v2: 3.96
     };
 
-    // Web Audio API를 활용한 효과음 시스템
+    // Web Audio API 효과음
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     function playDragSound() {
@@ -416,7 +425,7 @@
         osc.stop(audioCtx.currentTime + 0.08);
     }
 
-    // 🚫 마우스 휠 스크롤로 인한 숫자 변경 방지
+    // 🚫 스크롤 숫값 변화 방지
     document.addEventListener('wheel', function(e) {
         if (document.activeElement && document.activeElement.type === 'number') {
             document.activeElement.blur();
@@ -1004,7 +1013,7 @@
         `;
         calcTbody.innerHTML = calcHTML;
 
-        // 🌟 요청사항 반영: '카드' 명칭으로 간결하게 변경
+        // 🌟 슬롯 내부 텍스트를 명확히 '카드'로 표시
         let interpretHTML = '';
         if (mode === 'ball-big') {
             interpretHTML = `
@@ -1218,7 +1227,7 @@
             checkFieldMulti(meRes, [expectedME]);
         });
 
-        // 3. 데이터 해석 검증 (🌟 큰 쇠구슬 실험 역학적 에너지 변화 정답도 '일정'으로 통합)
+        // 3. 데이터 해석 검증 (🌟 큰 쇠구슬 및 골프공 모두 역학적 에너지 변화: '일정'으로 검증)
         if (currentMode === 'ball-big') {
             const rowOA = document.querySelector('tr[data-section="OA"]');
             const rowAB = document.querySelector('tr[data-section="AB"]');
