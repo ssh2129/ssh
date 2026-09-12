@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>전자기 유도 가상 실험실</title>
+  <title>전자기 유도 가상 실험실 & 개념 정리표</title>
   <style>
     * {
       box-sizing: border-box;
@@ -15,7 +15,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      background-color: #0f172a;
+      background-color: #090d16;
       color: #f8fafc;
       margin: 0;
       padding: 15px;
@@ -28,7 +28,7 @@
       background: #1e293b;
       padding: 12px 20px;
       border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
       border: 1px solid #334155;
       margin-bottom: 12px;
       display: flex;
@@ -58,26 +58,128 @@
     button:hover { background-color: #475569; }
     button:active { transform: scale(0.96); }
     
-    .btn-action {
-      background-color: #2563eb;
-      border: none;
-    }
+    .btn-action { background-color: #2563eb; border: none; }
     .btn-action:hover { background-color: #1d4ed8; }
 
     canvas {
-      background-color: #1e293b;
-      border: 2px solid #475569;
+      background-color: #111827;
+      border: 2px solid #374151;
       border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
       cursor: grab;
     }
     canvas:active { cursor: grabbing; }
+
+    .tables-wrapper {
+      display: flex;
+      gap: 15px;
+      width: 860px;
+      margin-top: 12px;
+    }
+    .table-container {
+      background-color: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .table-main { flex: 1.4; }
+    .table-sub { flex: 1; }
+
+    .table-header-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .table-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+    .reset-btn {
+      padding: 3px 8px;
+      font-size: 11px;
+      background-color: #475569;
+      border: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+    }
+    th, td {
+      border: 1px solid #475569;
+      padding: 8px 4px;
+      font-size: 13px;
+    }
+    th {
+      background-color: #334155;
+      color: #f1f5f9;
+      font-weight: 600;
+    }
+    .row-label {
+      background-color: #0f172a;
+      color: #38bdf8;
+      font-weight: bold;
+      width: 90px;
+    }
+    .ox-btn {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 50%;
+      border: 1px solid #64748b;
+      background-color: #0f172a;
+      color: #94a3b8;
+      cursor: pointer;
+      margin: 0 2px;
+      transition: all 0.2s;
+    }
+    .ox-btn:hover { border-color: #cbd5e1; color: #ffffff; }
+    
+    .ox-btn.active-o {
+      background-color: #eab308 !important;
+      color: #000000 !important;
+      border-color: #fef08a !important;
+      box-shadow: 0 0 10px rgba(234, 179, 8, 0.8);
+      transform: scale(1.1);
+    }
+    .ox-btn.active-x {
+      background-color: #ef4444 !important;
+      color: #ffffff !important;
+      border-color: #fca5a5 !important;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+      transform: scale(1.1);
+    }
+
+    .quiz-card {
+      background-color: #0f172a;
+      border: 1px dashed #64748b;
+      color: #fbbf24;
+      font-weight: bold;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quiz-card:hover {
+      background-color: #1e293b;
+      border-color: #f59e0b;
+    }
+    .quiz-card.revealed {
+      background-color: #f59e0b;
+      color: #000000;
+      border: 1px solid #fef08a;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+    }
   </style>
 </head>
 <body>
 
   <h2>⚡ 전자기 유도 가상 실험실</h2>
-  <p>자석이나 코일을 손가락/마우스로 움직여 보세요! (자석 세기 & 코일 감은 수에 따른 LED 밝기 변화 확인)</p>
+  <p>자석이나 코일을 드래그하여 움직여 보세요! (자석 세기 & 코일 감은 수 조절 가능)</p>
 
   <div class="control-panel">
     <div class="control-group">
@@ -92,9 +194,9 @@
     <div class="control-group">
       <label for="coilTurns">🌀 코일 감은 수:</label>
       <select id="coilTurns">
-        <option value="1">1번 감음 (약함)</option>
-        <option value="3" selected>3번 감음 (보통)</option>
-        <option value="5">5번 감음 (매우 큼)</option>
+        <option value="1">1번 감음</option>
+        <option value="3" selected>3번 감음</option>
+        <option value="5">5번 감음</option>
       </select>
     </div>
 
@@ -112,7 +214,79 @@
     </div>
   </div>
 
-  <canvas id="simCanvas" width="800" height="440"></canvas>
+  <canvas id="simCanvas" width="860" height="370"></canvas>
+
+  <div class="tables-wrapper">
+    <!-- 1. O/X 발생 여부 확인 표 -->
+    <div class="table-container table-main">
+      <div class="table-header-box">
+        <div class="table-title">📝 불빛(유도 전류) 발생 여부</div>
+        <button class="reset-btn" onclick="resetOX()">리셋</button>
+      </div>
+      <table>
+        <tr>
+          <td class="row-label">자석 조작</td>
+          <th>N극 가까이</th>
+          <th>N극 멀리</th>
+          <th style="color:#facc15;">자석 제자리</th>
+          <th>S극 가까이</th>
+          <th>S극 멀리</th>
+        </tr>
+        <tr>
+          <td style="color:#cbd5e1;">발생 여부</td>
+          <td><button class="ox-btn" onclick="toggleOX(this, 'o')">O</button><button class="ox-btn" onclick="toggleOX(this, 'x')">X</button></td>
+          <td><button class="ox-btn" onclick="toggleOX(this, 'o')">O</button><button class="ox-btn" onclick="toggleOX(this, 'x')">X</button></td>
+          <td><button class="ox-btn" onclick="toggleOX(this, 'o')">O</button><button class="ox-btn" onclick="toggleOX(this, 'x')">X</button></td>
+          <td><button class="ox-btn" onclick="toggleOX(this, 'o')">O</button><button class="ox-btn" onclick="toggleOX(this, 'x')">X</button></td>
+          <td><button class="ox-btn" onclick="toggleOX(this, 'o')">O</button><button class="ox-btn" onclick="toggleOX(this, 'x')">X</button></td>
+        </tr>
+        <tr>
+          <td class="row-label">코일 조작</td>
+          <th>코일 가까이</th>
+          <th>코일 멀리</th>
+          <th style="color:#facc15;">코일 제자리</th>
+          <th colspan="2" style="background-color:#1e293b; border:none;"></th>
+        </tr>
+        <tr>
+          <td style="color:#cbd5e1;">발생 여부</td>
+          <td><button class="ox-btn" onclick="toggleOX(this, 'o')">O</button><button class="ox-btn" onclick="toggleOX(this, 'x')">X</button></td>
+          <td><button class="ox-btn" onclick="toggleOX(this, 'o')">O</button><button class="ox-btn" onclick="toggleOX(this, 'x')">X</button></td>
+          <td><button class="ox-btn" onclick="toggleOX(this, 'o')">O</button><button class="ox-btn" onclick="toggleOX(this, 'x')">X</button></td>
+          <td colspan="2" style="background-color:#1e293b; border:none;"></td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- 2. 불빛을 더 밝게 하는 방법 3가지 -->
+    <div class="table-container table-sub">
+      <div class="table-header-box">
+        <div class="table-title">💡 불빛을 더 밝게 하는 방법 3가지</div>
+        <button class="reset-btn" onclick="resetQuiz()">리셋</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th width="35%">구분</th>
+            <th>정답 확인 (클릭)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:bold; color:#cbd5e1;">방법 1</td>
+            <td><div class="quiz-card" onclick="revealQuiz(this, '자석/코일을 빠르게 움직인다')">❓ 클릭하여 정답 확인</div></td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold; color:#cbd5e1;">방법 2</td>
+            <td><div class="quiz-card" onclick="revealQuiz(this, '더 강한 자석을 사용한다')">❓ 클릭하여 정답 확인</div></td>
+          </tr>
+          <tr>
+            <td style="font-weight:bold; color:#cbd5e1;">방법 3</td>
+            <td><div class="quiz-card" onclick="revealQuiz(this, '코일 감은 수를 늘린다')">❓ 클릭하여 정답 확인</div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <script>
     const canvas = document.getElementById('simCanvas');
@@ -124,19 +298,46 @@
     const flipBtn = document.getElementById('flipBtn');
     const fullScreenBtn = document.getElementById('fullScreenBtn');
 
-    // 상태 객체
     let magnet = { 
-      x: 520, y: 190, width: 140, height: 60, 
+      x: 560, y: 140, width: 140, height: 60, 
       dx: 0, isFlipped: false 
     };
     
-    let coil = { x: 140, y: 160, width: 240, height: 180, dx: 0 };
+    let coil = { x: 140, y: 110, width: 260, height: 210, dx: 0 };
 
     let activeTarget = null;
     let dragOffsetX = 0, dragOffsetY = 0;
     let brightness = 0;
 
-    // 이벤트 등록
+    function toggleOX(btn, type) {
+      const parentTd = btn.parentElement;
+      const buttons = parentTd.querySelectorAll('.ox-btn');
+      buttons.forEach(b => b.classList.remove('active-o', 'active-x'));
+
+      if (type === 'o') {
+        btn.classList.add('active-o');
+      } else {
+        btn.classList.add('active-x');
+      }
+    }
+
+    function resetOX() {
+      document.querySelectorAll('.ox-btn').forEach(b => b.classList.remove('active-o', 'active-x'));
+    }
+
+    function revealQuiz(el, answerText) {
+      el.classList.add('revealed');
+      el.innerText = '✨ ' + answerText;
+    }
+
+    function resetQuiz() {
+      const cards = document.querySelectorAll('.quiz-card');
+      cards.forEach(c => {
+        c.classList.remove('revealed');
+        c.innerText = '❓ 클릭하여 정답 확인';
+      });
+    }
+
     flipBtn.addEventListener('click', () => { magnet.isFlipped = !magnet.isFlipped; });
     fullScreenBtn.addEventListener('click', () => {
       if (!document.fullscreenElement) {
@@ -201,46 +402,46 @@
       if (activeTarget !== 'magnet') magnet.dx *= 0.5;
       if (activeTarget !== 'coil') coil.dx *= 0.5;
 
-      // 물리 공식 연산: 유도 기전력 V ∝ (자석 세기) * (감은 수) * (상대 속도)
       const relVelocity = Math.abs(magnet.dx - coil.dx);
       const magStrength = parseFloat(strengthSelect.value);
       const turns = parseInt(turnsSelect.value);
       
-      const targetBrightness = relVelocity * magStrength * (turns / 3) * 5;
-      brightness += (targetBrightness - brightness) * 0.2; // 부드러운 전환
+      const targetBrightness = relVelocity * magStrength * (turns / 3) * 6;
+      brightness += (targetBrightness - brightness) * 0.25;
       const curBrightness = Math.min(brightness, 100);
 
       const colorMode = colorSelect.value;
-      const mainColor = colorMode === 'red' ? '#ff1744' : '#ffea00';
-      const glowColor = colorMode === 'red' ? 'rgba(255, 23, 68, ' : 'rgba(255, 234, 0, ';
+      const mainColor = colorMode === 'red' ? '#ff003c' : '#ffea00';
+      const glowColor = colorMode === 'red' ? 'rgba(255, 0, 60, ' : 'rgba(255, 234, 0, ';
 
-      // --- 1. 코일 & LED 그리기 ---
+      // --- 1. 코일 & LED 연쇄 루프 (단선 완전 보정) ---
       ctx.save();
       ctx.translate(coil.x, coil.y);
 
-      const ledX = 35;
-      const ledY = 55;
+      const ledX = 40;
+      const ledY = 65;
+      const legLeftX = ledX - 10;
+      const legRightX = ledX + 10;
+      const legBottomY = ledY + 8;
 
-      // 💥 고휘도 발광 효과 (강한 자석 + 높은 감은 수 시 전파)
-      if (curBrightness > 2) {
-        const glowRadius = (25 + curBrightness * 0.9);
+      // 발광 효과
+      if (curBrightness > 1.5) {
+        const glowRadius = (35 + curBrightness * 1.3);
 
-        // 퍼져나가는 방사형 광선 (Ray)
-        ctx.strokeStyle = glowColor + Math.min(curBrightness / 70, 0.8) + ')';
-        ctx.lineWidth = 3;
-        const rayCount = 12;
-        for (let i = 0; i < rayCount; i++) {
-          const angle = (i * Math.PI) / (rayCount / 2);
+        ctx.strokeStyle = glowColor + Math.min(curBrightness / 50, 0.95) + ')';
+        ctx.lineWidth = 4;
+        for (let i = 0; i < 16; i++) {
+          const angle = (i * Math.PI) / 8;
           ctx.beginPath();
           ctx.moveTo(ledX, ledY - 22);
-          ctx.lineTo(ledX + Math.cos(angle) * (glowRadius + 20), (ledY - 22) + Math.sin(angle) * (glowRadius + 20));
+          ctx.lineTo(ledX + Math.cos(angle) * (glowRadius + 28), (ledY - 22) + Math.sin(angle) * (glowRadius + 28));
           ctx.stroke();
         }
 
-        // 중심 백색 코어 및 네온 후광
-        const gradient = ctx.createRadialGradient(ledX, ledY - 22, 2, ledX, ledY - 22, glowRadius);
+        const gradient = ctx.createRadialGradient(ledX, ledY - 22, 1, ledX, ledY - 22, glowRadius);
         gradient.addColorStop(0, '#ffffff');
-        gradient.addColorStop(0.2, mainColor);
+        gradient.addColorStop(0.15, '#ffffff');
+        gradient.addColorStop(0.4, mainColor);
         gradient.addColorStop(1, glowColor + '0)');
 
         ctx.fillStyle = gradient;
@@ -249,60 +450,65 @@
         ctx.fill();
       }
 
-      // LED 렌즈 (정밀 디테일)
+      // LED 렌즈
       ctx.beginPath();
       ctx.arc(ledX, ledY - 22, 20, Math.PI, 0, false);
       ctx.lineTo(ledX + 20, ledY);
       ctx.lineTo(ledX - 20, ledY);
       ctx.closePath();
 
-      ctx.fillStyle = curBrightness > 2 ? mainColor : (colorMode === 'red' ? '#7f1d1d' : '#713f12');
-      ctx.strokeStyle = '#f8fafc';
-      ctx.lineWidth = 2.5;
+      ctx.fillStyle = curBrightness > 1.5 ? '#ffffff' : (colorMode === 'red' ? '#800014' : '#713f12');
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
       ctx.fill();
       ctx.stroke();
 
-      // LED 내부 리드 프레임 칩 (Anode/Cathode)
+      // 내부 리드프레임
       ctx.beginPath();
       ctx.moveTo(ledX - 8, ledY);
       ctx.lineTo(ledX - 8, ledY - 14);
       ctx.lineTo(ledX - 3, ledY - 9);
       ctx.moveTo(ledX + 8, ledY);
       ctx.lineTo(ledX + 8, ledY - 18);
-      ctx.strokeStyle = '#e2e8f0';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = curBrightness > 1.5 ? mainColor : '#cbd5e1';
+      ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // LED 하단 돌기 링
+      // 하단 링
       ctx.fillStyle = '#94a3b8';
       ctx.fillRect(ledX - 22, ledY, 44, 5);
 
-      // 전선 & 감은 수(Turns)에 따른 겹침 코일 그리기
-      ctx.strokeStyle = '#38bdf8';
+      // 🔗 [전선 완전 연쇄 드로잉 구조 (Perfect Closed Loop)]
       ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#38bdf8';
 
-      // 하단 전선
       ctx.beginPath();
-      ctx.moveTo(ledX - 8, ledY + 5);
-      ctx.lineTo(ledX - 8, 140);
-      ctx.lineTo(150, 140);
-      ctx.stroke();
+      // 1) 왼쪽 다리 하단에서 시작
+      ctx.moveTo(legLeftX, legBottomY);
+      // 2) 바닥 직선 전선
+      ctx.lineTo(legLeftX, 150);
+      ctx.lineTo(160, 150);
 
-      // 입체 코일 묶음 (감은 수 시각화)
+      // 3) 끊김 없이 이어지는 코일 베지에 곡선 고리들
       for (let t = 0; t < turns; t++) {
         const offset = t * 7;
-        ctx.beginPath();
-        ctx.strokeStyle = t === 0 ? '#38bdf8' : '#0284c7';
-        ctx.bezierCurveTo(190 + offset, 140, 190 + offset, 10, 150 + offset, 10);
-        ctx.stroke();
+        const loopStartX = 160 + offset;
+        ctx.bezierCurveTo(210 + offset, 150, 210 + offset, 15, loopStartX, 15);
+        if (t < turns - 1) {
+          // 다음 루프 시작점 연결
+          ctx.lineTo(160 + (t + 1) * 7, 150);
+        }
       }
 
-      // 상단 전선 연결
-      ctx.beginPath();
-      ctx.strokeStyle = '#38bdf8';
-      ctx.moveTo(150, 10);
-      ctx.lineTo(ledX + 8, 10);
-      ctx.lineTo(ledX + 8, ledY + 5);
+      // 4) 코일 끝점에서 상단 전선을 거쳐 오른쪽 다리 하단으로 완전 연결
+      const lastLoopX = 160 + (turns - 1) * 7;
+      ctx.lineTo(lastLoopX, 15);
+      ctx.lineTo(legRightX, 15);
+      ctx.lineTo(legRightX, legBottomY);
+      
+      // 단 한 번의 stroke() 호출로 끊김 없는 회로 완성
       ctx.stroke();
 
       ctx.restore();
@@ -313,44 +519,40 @@
       const leftText = magnet.isFlipped ? 'S' : 'N';
       const rightText = magnet.isFlipped ? 'N' : 'S';
 
-      // N/S 극 분할
       ctx.fillStyle = leftColor;
       ctx.fillRect(magnet.x, magnet.y, magnet.width / 2, magnet.height);
       ctx.fillStyle = rightColor;
       ctx.fillRect(magnet.x + magnet.width / 2, magnet.y, magnet.width / 2, magnet.height);
 
-      // 자석 텍스트
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 24px Arial';
       ctx.textAlign = 'center';
       ctx.fillText(leftText, magnet.x + magnet.width / 4, magnet.y + 38);
       ctx.fillText(rightText, magnet.x + (magnet.width * 3) / 4, magnet.y + 38);
 
-      // 자석 테두리
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.strokeRect(magnet.x, magnet.y, magnet.width, magnet.height);
 
-      // 강한 자석 골드 후광 테두리
       if (magStrength === 2.5) {
         ctx.strokeStyle = '#facc15';
         ctx.lineWidth = 4;
         ctx.strokeRect(magnet.x - 3, magnet.y - 3, magnet.width + 6, magnet.height + 6);
       }
 
-      // --- 3. 실시간 유도 기전력(밝기) 게이지 ---
-      ctx.fillStyle = '#334155';
-      ctx.fillRect(20, 390, 200, 18);
+      // 게이지
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(20, 335, 200, 18);
       ctx.fillStyle = mainColor;
-      ctx.fillRect(20, 390, (curBrightness / 100) * 200, 18);
+      ctx.fillRect(20, 335, (curBrightness / 100) * 200, 18);
       ctx.strokeStyle = '#64748b';
       ctx.lineWidth = 1;
-      ctx.strokeRect(20, 390, 200, 18);
+      ctx.strokeRect(20, 335, 200, 18);
 
       ctx.fillStyle = '#f8fafc';
       ctx.font = '12px Pretendard';
       ctx.textAlign = 'left';
-      ctx.fillText(`유도 전류 세기: ${Math.round(curBrightness)}%`, 20, 382);
+      ctx.fillText(`유도 전류 세기: ${Math.round(curBrightness)}%`, 20, 327);
 
       requestAnimationFrame(draw);
     }
