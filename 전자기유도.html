@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>전자기 유도 가상 실험실 - 전자칠판 & PPT 시연용</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --panel-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --accent-red: #ef4444;
+      --accent-yellow: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", Roboto, "Malgun Gothic", sans-serif;
+      margin: 0;
+      padding: 16px;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* 상단 컨트롤 바 (전자칠판 터치에 최적화된 큰 크기) */
+    .toolbar {
+      width: 100%;
+      max-width: 980px;
+      background-color: var(--panel-bg);
+      border-radius: 16px;
+      padding: 12px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 12px;
+    }
+
+    .title-group h1 {
+      font-size: 20px;
+      margin: 0;
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-group p {
+      font-size: 13px;
+      margin: 2px 0 0 0;
+      color: var(--text-sub);
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .control-item label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    select, button {
+      background-color: #334155;
+      color: #ffffff;
+      border: 1px solid #475569;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.15s ease-in-out;
+    }
+
+    select:hover, button:hover {
+      background-color: #475569;
+      border-color: #64748b;
+    }
+
+    button:active {
+      transform: scale(0.96);
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border: none;
+    }
+    .btn-action:hover {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+    }
+
+    .btn-fullscreen {
+      background: #0ea5e9;
+      border: none;
+    }
+
+    /* 시뮬레이션 캔버스 컨테이너 */
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      max-width: 980px;
+      height: 580px;
+      background: radial-gradient(circle at center, #1e293b 0%, #0b1120 100%);
+      border-radius: 20px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+      border: 2px solid #334155;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+
+    canvas:active {
+      cursor: grabbing;
+    }
+
+    /* 교실 안내 인디케이터 */
+    .guide-banner {
+      position: absolute;
+      top: 14px;
+      left: 20px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      padding: 8px 16px;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.15);
+      font-size: 14px;
+      font-weight: 500;
+      color: #cbd5e1;
+      pointer-events: none;
+    }
+
+    .gauge-container {
+      position: absolute;
+      bottom: 16px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 10px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .gauge-bar-bg {
+      width: 140px;
+      height: 14px;
+      background: #334155;
+      border-radius: 7px;
+      overflow: hidden;
+    }
+
+    .gauge-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      transition: width 0.08s ease-out;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 전자칠판용 상단 도구 모음 -->
+  <div class="toolbar">
+    <div class="title-group">
+      <h1>⚡ 전자기 유도 가상 실험실</h1>
+      <p>자석이나 코일을 드래그하여 상대적인 움직임을 만들어보세요.</p>
+    </div>
+
+    <div class="controls-group">
+      <!-- LED 색상 선택 (적색 / 노란색) -->
+      <div class="control-item">
+        <label for="ledColor">💡 LED 색상:</label>
+        <select id="ledColor">
+          <option value="red" selected>초고휘도 레드 (Red)</option>
+          <option value="yellow">황금 옐로우 (Yellow)</option>
+        </select>
+      </div>
+
+      <!-- 자석 세기 조절 -->
+      <div class="control-item">
+        <label for="magnetStrength">🧲 자석 세기:</label>
+        <select id="magnetStrength">
+          <option value="0.7">보통 자석</option>
+          <option value="1.6" selected>강한 네오디뮴</option>
+          <option value="3.0">🔥 슈퍼 네오디뮴 (극강)</option>
+        </select>
+      </div>
+
+      <!-- 극 반전 버튼 -->
+      <button id="flipBtn" class="btn-action">🔄 극 반전 (N ↔ S)</button>
+
+      <!-- 전자칠판 꽉 찬 화면 버튼 -->
+      <button id="fullscreenBtn" class="btn-fullscreen">⛶ 전체화면</button>
+    </div>
+  </div>
+
+  <!-- 메인 캔버스 뷰 -->
+  <div class="canvas-container" id="canvasWrapper">
+    <canvas id="simCanvas" width="980" height="580"></canvas>
+    
+    <div class="guide-banner">
+      👉 <b>자석</b> 또는 <b>코일</b>을 손가락이나 마우스로 빠르게 통과시켜보세요!
+    </div>
+
+    <div class="gauge-container">
+      <span style="font-size:13px; font-weight:600; color:#cbd5e1;">유도 기전력(밝기):</span>
+      <div class="gauge-bar-bg">
+        <div id="gaugeFill" class="gauge-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    const gaugeFill = document.getElementById('gaugeFill');
+
+    const ledColorSelect = document.getElementById('ledColor');
+    const magnetStrengthSelect = document.getElementById('magnetStrength');
+    const flipBtn = document.getElementById('flipBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    // 1. 객체 상태 정의
+    let magnet = {
+      x: 620,
+      y: 250,
+      width: 170,
+      height: 76,
+      dx: 0,
+      isFlipped: false
+    };
+
+    let coil = {
+      x: 170,
+      y: 190,
+      width: 320,
+      height: 250,
+      dx: 0
+    };
+
+    let activeTarget = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    let lastX = 0;
+
+    let relativeSpeed = 0;
+    let smoothBrightness = 0;
+
+    // 2. 이벤트 리스너 (터치 & 마우스 공용)
+    function getCanvasCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    function handleStart(e) {
+      const pos = getCanvasCoords(e);
+
+      // 자석 터치 영역 확인
+      if (pos.x >= magnet.x && pos.x <= magnet.x + magnet.width &&
+          pos.y >= magnet.y && pos.y <= magnet.y + magnet.height) {
+        activeTarget = 'magnet';
+        dragOffsetX = pos.x - magnet.x;
+        dragOffsetY = pos.y - magnet.y;
+        lastX = pos.x;
+        return;
+      }
+
+      // 코일 터치 영역 확인 (코일 전체 바운딩 박스)
+      if (pos.x >= coil.x && pos.x <= coil.x + coil.width &&
+          pos.y >= coil.y && pos.y <= coil.y + coil.height) {
+        activeTarget = 'coil';
+        dragOffsetX = pos.x - coil.x;
+        dragOffsetY = pos.y - coil.y;
+        lastX = pos.x;
+      }
+    }
+
+    function handleMove(e) {
+      if (!activeTarget) return;
+      const pos = getCanvasCoords(e);
+      const delta = pos.x - lastX;
+
+      if (activeTarget === 'magnet') {
+        magnet.dx = delta;
+        magnet.x = pos.x - dragOffsetX;
+        magnet.y = pos.y - dragOffsetY;
+      } else if (activeTarget === 'coil') {
+        coil.dx = delta;
+        coil.x = pos.x - dragOffsetX;
+        coil.y = pos.y - dragOffsetY;
+      }
+      lastX = pos.x;
+    }
+
+    function handleEnd() {
+      activeTarget = null;
+    }
+
+    canvas.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+
+    canvas.addEventListener('touchstart', (e) => { handleStart(e); e.preventDefault(); }, { passive: false });
+    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('touchend', handleEnd);
+
+    // 극 반전 버튼
+    flipBtn.addEventListener('click', () => {
+      magnet.isFlipped = !magnet.isFlipped;
+    });
+
+    // 전체화면 토글
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => alert(err.message));
+        fullscreenBtn.textContent = '✕ 화면 복귀';
+      } else {
+        document.exitFullscreen();
+        fullscreenBtn.textContent = '⛶ 전체화면';
+      }
+    });
+
+    // 3. 고품질 렌더링 함수들
+
+    // 실물 스타일 고품질 LED 그리기 함수
+    function drawRealisticLED(ctx, x, y, brightness, colorType, strengthMult) {
+      const isRed = (colorType === 'red');
+      const baseHue = isRed ? 0 : 45; // 0: Red, 45: Yellow-Amber
+
+      ctx.save();
+      ctx.translate(x, y);
+
+      // (1) 강렬한 불빛 후광 및 광선 플레어 (움직일 때 발생)
+      if (brightness > 2) {
+        const glowScale = (brightness / 100) * (strengthMult >= 2.5 ? 1.5 : 1.1);
+        const radius = 60 + glowScale * 140;
+
+        // 원형 후광 그라디언트
+        const radialGlow = ctx.createRadialGradient(0, -30, 8, 0, -30, radius);
+        if (isRed) {
+          radialGlow.addColorStop(0, `rgba(255, 255, 255, ${0.9 * glowScale})`);
+          radialGlow.addColorStop(0.25, `rgba(255, 40, 40, ${0.85 * glowScale})`);
+          radialGlow.addColorStop(0.65, `rgba(230, 0, 0, ${0.45 * glowScale})`);
+          radialGlow.addColorStop(1, 'rgba(200, 0, 0, 0)');
+        } else {
+          radialGlow.addColorStop(0, `rgba(255, 255, 255, ${0.95 * glowScale})`);
+          radialGlow.addColorStop(0.25, `rgba(255, 215, 0, ${0.9 * glowScale})`);
+          radialGlow.addColorStop(0.65, `rgba(245, 158, 11, ${0.5 * glowScale})`);
+          radialGlow.addColorStop(1, 'rgba(217, 119, 6, 0)');
+        }
+
+        ctx.fillStyle = radialGlow;
+        ctx.beginPath();
+        ctx.arc(0, -30, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 교실 맨 뒷자리까지 시원하게 보이는 방사형 샤인 레이(Shine Rays)
+        if (brightness > 15) {
+          const rayCount = strengthMult >= 2.5 ? 16 : 10;
+          ctx.strokeStyle = isRed ? `rgba(255, 180, 180, ${0.5 * glowScale})` : `rgba(255, 245, 160, ${0.6 * glowScale})`;
+          ctx.lineWidth = strengthMult >= 2.5 ? 4.5 : 3;
+
+          for (let i = 0; i < rayCount; i++) {
+            const angle = (i * (Math.PI * 2 / rayCount)) + (Date.now() * 0.002);
+            const rStart = 28;
+            const rEnd = radius * 1.15;
+            ctx.beginPath();
+            ctx.moveTo(Math.cos(angle) * rStart, -30 + Math.sin(angle) * rStart);
+            ctx.lineTo(Math.cos(angle) * rEnd, -30 + Math.sin(angle) * rEnd);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // (2) LED 금속 리드선 (Anode & Cathode 다리)
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      // 왼쪽 긴 다리
+      ctx.beginPath();
+      ctx.moveTo(-10, 10);
+      ctx.lineTo(-10, 50);
+      ctx.stroke();
+      // 오른쪽 다리
+      ctx.beginPath();
+      ctx.moveTo(10, 10);
+      ctx.lineTo(10, 50);
+      ctx.stroke();
+
+      // (3) LED 베이스 림 (플랜지 턱)
+      ctx.fillStyle = isRed ? (brightness > 5 ? '#f87171' : '#7f1d1d') : (brightness > 5 ? '#fde047' : '#78350f');
+      ctx.beginPath();
+      ctx.roundRect(-24, 4, 48, 8, 3);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // (4) LED 에폭시 돔 (반투명 볼록 렌즈)
+      const domeWidth = 20;
+      const domeHeight = 36;
+      ctx.beginPath();
+      ctx.moveTo(-domeWidth, 4);
+      ctx.lineTo(-domeWidth, -24);
+      ctx.arc(0, -24, domeWidth, Math.PI, 0, false);
+      ctx.lineTo(domeWidth, 4);
+      ctx.closePath();
+
+      // 렌즈 내부 그라디언트
+      const domeGrad = ctx.createLinearGradient(-domeWidth, 0, domeWidth, 0);
+      if (isRed) {
+        if (brightness > 5) {
+          domeGrad.addColorStop(0, '#fca5a5');
+          domeGrad.addColorStop(0.5, '#ef4444');
+          domeGrad.addColorStop(1, '#dc2626');
+        } else {
+          domeGrad.addColorStop(0, 'rgba(185, 28, 28, 0.85)');
+          domeGrad.addColorStop(0.5, 'rgba(127, 29, 29, 0.9)');
+          domeGrad.addColorStop(1, 'rgba(69, 10, 10, 0.95)');
+        }
+      } else {
+        if (brightness > 5) {
+          domeGrad.addColorStop(0, '#fef08a');
+          domeGrad.addColorStop(0.5, '#f59e0b');
+          domeGrad.addColorStop(1, '#d97706');
+        } else {
+          domeGrad.addColorStop(0, 'rgba(217, 119, 6, 0.85)');
+          domeGrad.addColorStop(0.5, 'rgba(180, 83, 9, 0.9)');
+          domeGrad.addColorStop(1, 'rgba(120, 53, 15, 0.95)');
+        }
+      }
+
+      ctx.fillStyle = domeGrad;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // (5) 내부 리드프레임 (앤빌 & 포스트 컵 칩 모양)
+      ctx.fillStyle = 'rgba(226, 232, 240, 0.7)';
+      ctx.beginPath();
+      ctx.moveTo(-8, 4);
+      ctx.lineTo(-8, -14);
+      ctx.lineTo(-2, -8);
+      ctx.lineTo(-2, 4);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(8, 4);
+      ctx.lineTo(8, -18);
+      ctx.lineTo(3, -14);
+      ctx.lineTo(3, 4);
+      ctx.fill();
+
+      // (6) 유리 표면 고광택 하이라이트 (Glossy Shine)
+      ctx.beginPath();
+      ctx.ellipse(-8, -25, 4, 14, -Math.PI / 10, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // 막대 자석 그리기 함수
+    function drawMagnet(ctx, m, mult) {
+      ctx.save();
+      const cornerRadius = 10;
+      const halfW = m.width / 2;
+
+      // 강한 자석 오라(Aura) 효과
+      if (mult >= 2.5) {
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 24;
+      } else if (mult >= 1.5) {
+        ctx.shadowColor = '#60a5fa';
+        ctx.shadowBlur = 14;
+      }
+
+      const leftColor = m.isFlipped ? '#2563eb' : '#dc2626';
+      const rightColor = m.isFlipped ? '#dc2626' : '#2563eb';
+      const leftPole = m.isFlipped ? 'S' : 'N';
+      const rightPole = m.isFlipped ? 'N' : 'S';
+
+      // 1. 왼쪽 극
+      ctx.fillStyle = leftColor;
+      ctx.beginPath();
+      ctx.roundRect(m.x, m.y, halfW, m.height, [cornerRadius, 0, 0, cornerRadius]);
+      ctx.fill();
+
+      // 입체 하이라이트
+      const gradLeft = ctx.createLinearGradient(m.x, m.y, m.x, m.y + m.height);
+      gradLeft.addColorStop(0, 'rgba(255,255,255,0.3)');
+      gradLeft.addColorStop(0.5, 'rgba(0,0,0,0)');
+      gradLeft.addColorStop(1, 'rgba(0,0,0,0.3)');
+      ctx.fillStyle = gradLeft;
+      ctx.fill();
+
+      // 2. 오른쪽 극
+      ctx.fillStyle = rightColor;
+      ctx.beginPath();
+      ctx.roundRect(m.x + halfW, m.y, halfW, m.height, [0, cornerRadius, cornerRadius, 0]);
+      ctx.fill();
+
+      const gradRight = ctx.createLinearGradient(m.x + halfW, m.y, m.x + halfW, m.y + m.height);
+      gradRight.addColorStop(0, 'rgba(255,255,255,0.3)');
+      gradRight.addColorStop(0.5, 'rgba(0,0,0,0)');
+      gradRight.addColorStop(1, 'rgba(0,0,0,0.3)');
+      ctx.fillStyle = gradRight;
+      ctx.fill();
+
+      // 3. 극 글자 표기
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 30px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(leftPole, m.x + halfW * 0.5, m.y + m.height * 0.5);
+      ctx.fillText(rightPole, m.x + halfW * 1.5, m.y + m.height * 0.5);
+
+      // 외곽선
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(m.x, m.y, m.width, m.height);
+
+      ctx.restore();
+    }
+
+    // 4. 메인 애니메이션 렌더링 루프
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 물리 엔진 감쇄 계산
+      if (activeTarget !== 'magnet') magnet.dx *= 0.6;
+      if (activeTarget !== 'coil') coil.dx *= 0.6;
+
+      // 상대 속도: |v_자석 - v_코일|
+      const relSpeed = Math.abs(magnet.dx - coil.dx);
+      const mult = parseFloat(magnetStrengthSelect.value);
+      
+      const targetBrightness = Math.min(relSpeed * 5.2 * mult, 100);
+      // 자연스럽게 페이드아웃되는 빛 완충
+      smoothBrightness += (targetBrightness - smoothBrightness) * 0.25;
+
+      // 하단 게이지 바 업데이트
+      gaugeFill.style.width = `${Math.min(smoothBrightness, 100)}%`;
+
+      // --- [A] 코일 & 도선 그리기 ---
+      ctx.save();
+      ctx.translate(coil.x, coil.y);
+
+      const ledX = 50;
+      const ledY = 70;
+
+      // 도선(구리선 느낌의 세련된 라인)
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      ctx.beginPath();
+      // LED 다리에서 출발하여 하단으로
+      ctx.moveTo(ledX - 10, ledY + 48);
+      ctx.lineTo(ledX - 10, 190);
+      ctx.lineTo(240, 190);
+
+      // 코일 통과 고리 (자석이 드나드는 통로)
+      ctx.bezierCurveTo(310, 190, 310, 20, 240, 20);
+      ctx.lineTo(ledX + 10, 20);
+      ctx.lineTo(ledX + 10, ledY + 48);
+      ctx.stroke();
+
+      // 전선 하이라이트
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // 도선 위에 LED 그리기
+      drawRealisticLED(ctx, ledX, ledY, smoothBrightness, ledColorSelect.value, mult);
+
+      ctx.restore();
+
+      // --- [B] 자석 그리기 ---
+      drawMagnet(ctx, magnet, mult);
+
+      requestAnimationFrame(render);
+    }
+
+    render();
+  </script>
+</body>
+</html>
